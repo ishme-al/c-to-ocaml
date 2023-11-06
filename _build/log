@@ -1,9 +1,9 @@
-# dune test
+# dune build
 # OCAMLPARAM: unset
 # Shared cache: disabled
-# Workspace root: /Users/nishi1/Desktop/FP/assignment4
+# Workspace root: /fpse/c-to-ocaml
 # Auto-detected concurrency: 8
-$ /Users/nishi1/.opam/5.0.0/bin/ocamlc.opt -config > /var/folders/8q/_qvy0vj14hb2y6m_kklc4v4w0000gq/T/dune_4ecfe2_output
+$ /root/.opam/5.0.0/bin/ocamlc.opt -config > /tmp/dune_c7d0bd_output
 # Dune context:
 #  { name = "default"
 #  ; kind = "default"
@@ -12,74 +12,74 @@ $ /Users/nishi1/.opam/5.0.0/bin/ocamlc.opt -config > /var/folders/8q/_qvy0vj14hb
 #  ; for_host = None
 #  ; fdo_target_exe = None
 #  ; build_dir = In_build_dir "default"
-#  ; ocaml_bin = External "/Users/nishi1/.opam/5.0.0/bin"
-#  ; ocaml = Ok External "/Users/nishi1/.opam/5.0.0/bin/ocaml"
-#  ; ocamlc = External "/Users/nishi1/.opam/5.0.0/bin/ocamlc.opt"
-#  ; ocamlopt = Ok External "/Users/nishi1/.opam/5.0.0/bin/ocamlopt.opt"
-#  ; ocamldep = Ok External "/Users/nishi1/.opam/5.0.0/bin/ocamldep.opt"
-#  ; ocamlmklib = Ok External "/Users/nishi1/.opam/5.0.0/bin/ocamlmklib.opt"
+#  ; ocaml_bin = External "/root/.opam/5.0.0/bin"
+#  ; ocaml = Ok External "/root/.opam/5.0.0/bin/ocaml"
+#  ; ocamlc = External "/root/.opam/5.0.0/bin/ocamlc.opt"
+#  ; ocamlopt = Ok External "/root/.opam/5.0.0/bin/ocamlopt.opt"
+#  ; ocamldep = Ok External "/root/.opam/5.0.0/bin/ocamldep.opt"
+#  ; ocamlmklib = Ok External "/root/.opam/5.0.0/bin/ocamlmklib.opt"
 #  ; env =
 #      map
 #        { "DUNE_OCAML_HARDCODED" :
-#            "/Users/nishi1/.opam/5.0.0/lib/ocaml:/Users/nishi1/.opam/5.0.0/lib"
-#        ; "DUNE_OCAML_STDLIB" : "/Users/nishi1/.opam/5.0.0/lib/ocaml"
-#        ; "DUNE_SOURCEROOT" : "/Users/nishi1/Desktop/FP/assignment4"
-#        ; "INSIDE_DUNE" :
-#            "/Users/nishi1/Desktop/FP/assignment4/_build/default"
+#            "/root/.opam/5.0.0/lib/ocaml:/root/.opam/5.0.0/lib"
+#        ; "DUNE_OCAML_STDLIB" : "/root/.opam/5.0.0/lib/ocaml"
+#        ; "DUNE_SOURCEROOT" : "/fpse/c-to-ocaml"
+#        ; "INSIDE_DUNE" : "/fpse/c-to-ocaml/_build/default"
 #        ; "OCAMLFIND_IGNORE_DUPS_IN" :
-#            "/Users/nishi1/Desktop/FP/assignment4/_build/install/default/lib"
-#        ; "OCAMLPATH" :
-#            "/Users/nishi1/Desktop/FP/assignment4/_build/install/default/lib"
+#            "/fpse/c-to-ocaml/_build/install/default/lib"
+#        ; "OCAMLPATH" : "/fpse/c-to-ocaml/_build/install/default/lib"
 #        ; "OCAMLTOP_INCLUDE_PATH" :
-#            "/Users/nishi1/Desktop/FP/assignment4/_build/install/default/lib/toplevel"
+#            "/fpse/c-to-ocaml/_build/install/default/lib/toplevel"
 #        ; "OCAML_COLOR" : "always"
 #        ; "OPAMCOLOR" : "always"
 #        }
 #  ; findlib_paths =
-#      [ External "/Users/nishi1/.opam/5.0.0/lib/ocaml"
-#      ; External "/Users/nishi1/.opam/5.0.0/lib"
+#      [ External "/root/.opam/5.0.0/lib/ocaml"
+#      ; External "/root/.opam/5.0.0/lib"
 #      ]
 #  ; natdynlink_supported = true
 #  ; supports_shared_libraries = true
 #  ; ocaml_config =
 #      { version = "5.0.0"
-#      ; standard_library_default = "/Users/nishi1/.opam/5.0.0/lib/ocaml"
-#      ; standard_library = "/Users/nishi1/.opam/5.0.0/lib/ocaml"
+#      ; standard_library_default = "/root/.opam/5.0.0/lib/ocaml"
+#      ; standard_library = "/root/.opam/5.0.0/lib/ocaml"
 #      ; standard_runtime = "the_standard_runtime_variable_was_deleted"
 #      ; ccomp_type = "cc"
-#      ; c_compiler = "cc"
+#      ; c_compiler = "gcc"
 #      ; ocamlc_cflags =
-#          [ "-O2"; "-fno-strict-aliasing"; "-fwrapv"; "-pthread" ]
+#          [ "-O2"; "-fno-strict-aliasing"; "-fwrapv"; "-pthread"; "-fPIC" ]
 #      ; ocamlc_cppflags = [ "-D_FILE_OFFSET_BITS=64" ]
 #      ; ocamlopt_cflags =
-#          [ "-O2"; "-fno-strict-aliasing"; "-fwrapv"; "-pthread" ]
+#          [ "-O2"; "-fno-strict-aliasing"; "-fwrapv"; "-pthread"; "-fPIC" ]
 #      ; ocamlopt_cppflags = [ "-D_FILE_OFFSET_BITS=64" ]
 #      ; bytecomp_c_compiler =
-#          [ "cc"
+#          [ "gcc"
 #          ; "-O2"
 #          ; "-fno-strict-aliasing"
 #          ; "-fwrapv"
 #          ; "-pthread"
+#          ; "-fPIC"
 #          ; "-D_FILE_OFFSET_BITS=64"
 #          ]
 #      ; bytecomp_c_libraries = [ "-lm"; "-lpthread" ]
 #      ; native_c_compiler =
-#          [ "cc"
+#          [ "gcc"
 #          ; "-O2"
 #          ; "-fno-strict-aliasing"
 #          ; "-fwrapv"
 #          ; "-pthread"
+#          ; "-fPIC"
 #          ; "-D_FILE_OFFSET_BITS=64"
 #          ]
 #      ; native_c_libraries = [ "-lm"; "-lpthread" ]
 #      ; native_pack_linker = [ "ld"; "-r"; "-o" ]
 #      ; cc_profile = []
-#      ; architecture = "arm64"
+#      ; architecture = "amd64"
 #      ; model = "default"
 #      ; int_size = 63
 #      ; word_size = 64
-#      ; system = "macosx"
-#      ; asm = [ "cc"; "-c"; "-Wno-trigraphs" ]
+#      ; system = "linux"
+#      ; asm = [ "as" ]
 #      ; asm_cfi_supported = true
 #      ; with_frame_pointers = false
 #      ; ext_exe = ""
@@ -90,8 +90,8 @@ $ /Users/nishi1/.opam/5.0.0/bin/ocamlc.opt -config > /var/folders/8q/_qvy0vj14hb
 #      ; os_type = "Unix"
 #      ; default_executable_name = "a.out"
 #      ; systhread_supported = true
-#      ; host = "aarch64-apple-darwin21.6.0"
-#      ; target = "aarch64-apple-darwin21.6.0"
+#      ; host = "x86_64-pc-linux-gnu"
+#      ; target = "x86_64-pc-linux-gnu"
 #      ; profiling = false
 #      ; flambda = false
 #      ; spacetime = false
@@ -111,3 +111,8 @@ $ /Users/nishi1/.opam/5.0.0/bin/ocamlc.opt -config > /var/folders/8q/_qvy0vj14hb
 #      ; windows_unicode = false
 #      }
 #  }
+$ (cd _build/.sandbox/939585aa199761c95dc190ac9ecff8d0/default && .ppx/47e007fefa63695257b4d9874e3138b7/ppx.exe -o src/tocaml.pp.ml --impl src/tocaml.ml -corrected-suffix .ppx-corrected -diff-cmd - -dump-ast)
+$ (cd _build/.sandbox/fab5d2548302835ca0f98d81b157284e/default && .ppx/47e007fefa63695257b4d9874e3138b7/ppx.exe -o src/tocaml.pp.mli --intf src/tocaml.mli -corrected-suffix .ppx-corrected -diff-cmd - -dump-ast)
+$ (cd _build/default && /root/.opam/5.0.0/bin/ocamlc.opt -w @1..3@5..28@30..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -bin-annot -I src/.tocaml.eobjs/byte -I /root/.opam/5.0.0/lib/base -I /root/.opam/5.0.0/lib/base/base_internalhash_types -I /root/.opam/5.0.0/lib/base/caml -I /root/.opam/5.0.0/lib/base/md5 -I /root/.opam/5.0.0/lib/base/shadow_stdlib -I /root/.opam/5.0.0/lib/base_bigstring -I /root/.opam/5.0.0/lib/base_quickcheck -I /root/.opam/5.0.0/lib/base_quickcheck/ppx_quickcheck/runtime -I /root/.opam/5.0.0/lib/bin_prot -I /root/.opam/5.0.0/lib/bin_prot/shape -I /root/.opam/5.0.0/lib/bisect_ppx/common -I /root/.opam/5.0.0/lib/bisect_ppx/runtime -I /root/.opam/5.0.0/lib/core -I /root/.opam/5.0.0/lib/core/base_for_tests -I /root/.opam/5.0.0/lib/core/command -I /root/.opam/5.0.0/lib/core/filename_base -I /root/.opam/5.0.0/lib/core/heap_block -I /root/.opam/5.0.0/lib/core/univ_map -I /root/.opam/5.0.0/lib/core/validate -I /root/.opam/5.0.0/lib/fieldslib -I /root/.opam/5.0.0/lib/int_repr -I /root/.opam/5.0.0/lib/jane-street-headers -I /root/.opam/5.0.0/lib/ocaml/unix -I /root/.opam/5.0.0/lib/parsexp -I /root/.opam/5.0.0/lib/ppx_assert/runtime-lib -I /root/.opam/5.0.0/lib/ppx_bench/runtime-lib -I /root/.opam/5.0.0/lib/ppx_compare/runtime-lib -I /root/.opam/5.0.0/lib/ppx_enumerate/runtime-lib -I /root/.opam/5.0.0/lib/ppx_expect/collector -I /root/.opam/5.0.0/lib/ppx_expect/common -I /root/.opam/5.0.0/lib/ppx_expect/config -I /root/.opam/5.0.0/lib/ppx_expect/config_types -I /root/.opam/5.0.0/lib/ppx_hash/runtime-lib -I /root/.opam/5.0.0/lib/ppx_here/runtime-lib -I /root/.opam/5.0.0/lib/ppx_inline_test/config -I /root/.opam/5.0.0/lib/ppx_inline_test/runtime-lib -I /root/.opam/5.0.0/lib/ppx_log/types -I /root/.opam/5.0.0/lib/ppx_module_timer/runtime -I /root/.opam/5.0.0/lib/ppx_sexp_conv/runtime-lib -I /root/.opam/5.0.0/lib/ppx_stable_witness/runtime -I /root/.opam/5.0.0/lib/ppx_stable_witness/stable_witness -I /root/.opam/5.0.0/lib/sexplib -I /root/.opam/5.0.0/lib/sexplib0 -I /root/.opam/5.0.0/lib/splittable_random -I /root/.opam/5.0.0/lib/stdio -I /root/.opam/5.0.0/lib/time_now -I /root/.opam/5.0.0/lib/typerep -I /root/.opam/5.0.0/lib/variantslib -no-alias-deps -opaque -o src/.tocaml.eobjs/byte/dune__exe__Tocaml.cmi -c -intf src/tocaml.pp.mli)
+$ (cd _build/default && /root/.opam/5.0.0/bin/ocamlopt.opt -w @1..3@5..28@30..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -I src/.tocaml.eobjs/byte -I src/.tocaml.eobjs/native -I /root/.opam/5.0.0/lib/base -I /root/.opam/5.0.0/lib/base/base_internalhash_types -I /root/.opam/5.0.0/lib/base/caml -I /root/.opam/5.0.0/lib/base/md5 -I /root/.opam/5.0.0/lib/base/shadow_stdlib -I /root/.opam/5.0.0/lib/base_bigstring -I /root/.opam/5.0.0/lib/base_quickcheck -I /root/.opam/5.0.0/lib/base_quickcheck/ppx_quickcheck/runtime -I /root/.opam/5.0.0/lib/bin_prot -I /root/.opam/5.0.0/lib/bin_prot/shape -I /root/.opam/5.0.0/lib/bisect_ppx/common -I /root/.opam/5.0.0/lib/bisect_ppx/runtime -I /root/.opam/5.0.0/lib/core -I /root/.opam/5.0.0/lib/core/base_for_tests -I /root/.opam/5.0.0/lib/core/command -I /root/.opam/5.0.0/lib/core/filename_base -I /root/.opam/5.0.0/lib/core/heap_block -I /root/.opam/5.0.0/lib/core/univ_map -I /root/.opam/5.0.0/lib/core/validate -I /root/.opam/5.0.0/lib/fieldslib -I /root/.opam/5.0.0/lib/int_repr -I /root/.opam/5.0.0/lib/jane-street-headers -I /root/.opam/5.0.0/lib/ocaml/unix -I /root/.opam/5.0.0/lib/parsexp -I /root/.opam/5.0.0/lib/ppx_assert/runtime-lib -I /root/.opam/5.0.0/lib/ppx_bench/runtime-lib -I /root/.opam/5.0.0/lib/ppx_compare/runtime-lib -I /root/.opam/5.0.0/lib/ppx_enumerate/runtime-lib -I /root/.opam/5.0.0/lib/ppx_expect/collector -I /root/.opam/5.0.0/lib/ppx_expect/common -I /root/.opam/5.0.0/lib/ppx_expect/config -I /root/.opam/5.0.0/lib/ppx_expect/config_types -I /root/.opam/5.0.0/lib/ppx_hash/runtime-lib -I /root/.opam/5.0.0/lib/ppx_here/runtime-lib -I /root/.opam/5.0.0/lib/ppx_inline_test/config -I /root/.opam/5.0.0/lib/ppx_inline_test/runtime-lib -I /root/.opam/5.0.0/lib/ppx_log/types -I /root/.opam/5.0.0/lib/ppx_module_timer/runtime -I /root/.opam/5.0.0/lib/ppx_sexp_conv/runtime-lib -I /root/.opam/5.0.0/lib/ppx_stable_witness/runtime -I /root/.opam/5.0.0/lib/ppx_stable_witness/stable_witness -I /root/.opam/5.0.0/lib/sexplib -I /root/.opam/5.0.0/lib/sexplib0 -I /root/.opam/5.0.0/lib/splittable_random -I /root/.opam/5.0.0/lib/stdio -I /root/.opam/5.0.0/lib/time_now -I /root/.opam/5.0.0/lib/typerep -I /root/.opam/5.0.0/lib/variantslib -intf-suffix .ml -no-alias-deps -opaque -o src/.tocaml.eobjs/native/dune__exe__Tocaml.cmx -c -impl src/tocaml.pp.ml)
+$ (cd _build/default && /root/.opam/5.0.0/bin/ocamlopt.opt -w @1..3@5..28@30..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -o src/tocaml.exe /root/.opam/5.0.0/lib/base/base_internalhash_types/base_internalhash_types.cmxa -I /root/.opam/5.0.0/lib/base/base_internalhash_types /root/.opam/5.0.0/lib/base/caml/caml.cmxa /root/.opam/5.0.0/lib/sexplib0/sexplib0.cmxa /root/.opam/5.0.0/lib/base/shadow_stdlib/shadow_stdlib.cmxa /root/.opam/5.0.0/lib/base/base.cmxa -I /root/.opam/5.0.0/lib/base /root/.opam/5.0.0/lib/ppx_sexp_conv/runtime-lib/ppx_sexp_conv_lib.cmxa /root/.opam/5.0.0/lib/ppx_compare/runtime-lib/ppx_compare_lib.cmxa /root/.opam/5.0.0/lib/ppx_enumerate/runtime-lib/ppx_enumerate_lib.cmxa /root/.opam/5.0.0/lib/ppx_hash/runtime-lib/ppx_hash_lib.cmxa /root/.opam/5.0.0/lib/ppx_here/runtime-lib/ppx_here_lib.cmxa /root/.opam/5.0.0/lib/ppx_assert/runtime-lib/ppx_assert_lib.cmxa /root/.opam/5.0.0/lib/ppx_bench/runtime-lib/ppx_bench_lib.cmxa /root/.opam/5.0.0/lib/base/md5/md5_lib.cmxa /root/.opam/5.0.0/lib/fieldslib/fieldslib.cmxa /root/.opam/5.0.0/lib/variantslib/variantslib.cmxa /root/.opam/5.0.0/lib/bin_prot/shape/bin_shape.cmxa /root/.opam/5.0.0/lib/ppx_stable_witness/stable_witness/stable_witness.cmxa /root/.opam/5.0.0/lib/bin_prot/bin_prot.cmxa -I /root/.opam/5.0.0/lib/bin_prot /root/.opam/5.0.0/lib/ppx_inline_test/config/inline_test_config.cmxa /root/.opam/5.0.0/lib/jane-street-headers/jane_street_headers.cmxa /root/.opam/5.0.0/lib/time_now/time_now.cmxa -I /root/.opam/5.0.0/lib/time_now /root/.opam/5.0.0/lib/ppx_inline_test/runtime-lib/ppx_inline_test_lib.cmxa /root/.opam/5.0.0/lib/stdio/stdio.cmxa /root/.opam/5.0.0/lib/ppx_module_timer/runtime/ppx_module_timer_runtime.cmxa /root/.opam/5.0.0/lib/ppx_stable_witness/runtime/ppx_stable_witness_runtime.cmxa /root/.opam/5.0.0/lib/typerep/typerep_lib.cmxa /root/.opam/5.0.0/lib/ppx_expect/common/expect_test_common.cmxa /root/.opam/5.0.0/lib/ppx_expect/config_types/expect_test_config_types.cmxa /root/.opam/5.0.0/lib/ppx_expect/collector/expect_test_collector.cmxa -I /root/.opam/5.0.0/lib/ppx_expect/collector /root/.opam/5.0.0/lib/ppx_expect/config/expect_test_config.cmxa /root/.opam/5.0.0/lib/parsexp/parsexp.cmxa /root/.opam/5.0.0/lib/sexplib/sexplib.cmxa /root/.opam/5.0.0/lib/ppx_log/types/ppx_log_types.cmxa /root/.opam/5.0.0/lib/splittable_random/splittable_random.cmxa /root/.opam/5.0.0/lib/base_quickcheck/base_quickcheck.cmxa /root/.opam/5.0.0/lib/base_quickcheck/ppx_quickcheck/runtime/ppx_quickcheck_runtime.cmxa /root/.opam/5.0.0/lib/int_repr/int_repr.cmxa /root/.opam/5.0.0/lib/base_bigstring/base_bigstring.cmxa -I /root/.opam/5.0.0/lib/base_bigstring /root/.opam/5.0.0/lib/core/base_for_tests/base_for_tests.cmxa /root/.opam/5.0.0/lib/core/filename_base/filename_base.cmxa /root/.opam/5.0.0/lib/core/univ_map/univ_map.cmxa /root/.opam/5.0.0/lib/core/command/command.cmxa /root/.opam/5.0.0/lib/core/heap_block/heap_block.cmxa -I /root/.opam/5.0.0/lib/core/heap_block /root/.opam/5.0.0/lib/core/validate/validate.cmxa /root/.opam/5.0.0/lib/core/core.cmxa -I /root/.opam/5.0.0/lib/core /root/.opam/5.0.0/lib/bisect_ppx/common/bisect_common.cmxa /root/.opam/5.0.0/lib/ocaml/unix/unix.cmxa /root/.opam/5.0.0/lib/bisect_ppx/runtime/bisect.cmxa src/.tocaml.eobjs/native/dune__exe__Tocaml.cmx)

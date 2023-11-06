@@ -1,16 +1,7 @@
-(library
-  (name lib)
-  (modules lib)
-  (libraries 
-    core)
-  (preprocess
-  (pps ppx_jane bisect_ppx)
-  )
-  )
-
 (executable
-  (name ngrams)
-  (modules ngrams)
+  (name tocaml)
+  (modules tocaml)
+  (preprocess 
+    (pps bisect_ppx))
   (libraries
-    lib
     core))
