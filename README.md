@@ -1,5 +1,19 @@
 # tocaml
-Transpiler from c to ocaml
+```
+Transpile c to ocaml code
+
+  tocaml.exe [input-file] [output-file]
+
+input-file: `-` for stdin
+output-file: `-` for stdout
+
+=== flags ===
+
+  [-w]                       . watch mode
+  [-build-info]              . print info about this build and exit
+  [-version]                 . print the version of this build and exit
+  [-help], -?                . print this help text and exit
+```
 
 # libraries
 clangml  
@@ -9,12 +23,6 @@ ocamlformat
 # todo
 mli declarations
 
-# usage
-    ./tocaml [-w] [input-file] [output-file]  
-
-    w: watch mode
-    input-file: can be `-` for stdin
-    output-file: can be `-` for stdin
 
 # dependencies
 - clang to convert from c to AST
