@@ -2,16 +2,19 @@
 Transpiler from c to ocaml
 
 # libraries
-clangml
-parse cmdline arguments?
-ocamlformat
+clangml  
+parse cmdline arguments?  
+ocamlformat  
 
 # todo
 mli declarations
 
 # usage
-./tocaml <input-file> <output-file>
--w?
+./tocaml [-w] [input-file] [output-file]  
+
+    w: watch mode
+    input-file: can be `-` for stdin
+    output-file: can be `-` for stdin
 
 # dependencies
 - clang to convert from c to AST
