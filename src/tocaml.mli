@@ -1,3 +1,3 @@
-module type Tocaml = sig
-
-end
+(* module type Tocaml = sig *)
+(**)
+(* end *)

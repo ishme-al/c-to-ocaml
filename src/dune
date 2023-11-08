@@ -1,7 +1,9 @@
 (executable
   (name tocaml)
   (modules tocaml)
+  (libraries 
+    core
+    core_unix.sys_unix
+    core_unix.command_unix)
   (preprocess 
-    (pps bisect_ppx))
-  (libraries
-    core))
+    (pps bisect_ppx ppx_let)))
