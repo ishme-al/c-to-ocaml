@@ -10,7 +10,7 @@ ocamlformat
 mli declarations
 
 # usage
-./tocaml [-w] [input-file] [output-file]  
+    ./tocaml [-w] [input-file] [output-file]  
 
     w: watch mode
     input-file: can be `-` for stdin
