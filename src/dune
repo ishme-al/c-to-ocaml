@@ -1,17 +1,13 @@
 (library
-  (name lib)
-  (modules lib)
-  (libraries core)
-  (preprocess
-   (pps bisect_ppx)))
+ (name lib)
+ (modules lib)
+ (libraries core clangml)
+ (preprocess
+  (pps bisect_ppx)))
 
 (executable
-  (name tocaml)
-  (modules tocaml)
-  (libraries 
-    lib
-    core
-    core_unix.sys_unix
-    core_unix.command_unix)
-  (preprocess 
-    (pps ppx_let)))
+ (name tocaml)
+ (modules tocaml)
+ (libraries lib core core_unix.sys_unix core_unix.command_unix)
+ (preprocess
+  (pps ppx_let)))

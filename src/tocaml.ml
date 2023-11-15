@@ -1,4 +1,5 @@
 open Core
+open Lib
   
 let read =
   Command.Arg_type.create (fun filename ->

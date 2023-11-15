@@ -1,0 +1,1 @@
+let to_ast (filename : string) = Format.fprintf (Format.formatter_of_out_channel stdout) "%a@" Clang.Translation_unit.pp (Clang.Ast.parse_file filename)
