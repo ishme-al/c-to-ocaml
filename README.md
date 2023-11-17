@@ -15,10 +15,10 @@ output-file: `-` for stdout
   [-help], -?                . print this help text and exit
 ```
 
-# libraries
-clangml  
-parse cmdline arguments?  
-ocamlformat  
+# libraries/dependencies
+clangml : to convert to C to AST
+core.command : to parse command line arguments
+ocamlformat
 
 # sample functionality
 covert
@@ -51,7 +51,17 @@ There is an optional flag of -w so that ocamloutput.ml will continue to be regen
 
 
 # todo
-mli declarations
+- [ ] c file to AST
+  - [X] file to AST
+  - [ ] stdin to AST ??
+- [ ] translate AST to ocaml code
+  - [ ] functions
+  - [ ] statements
+    - [ ] for-loop
+    - [ ] if statements
+    - [ ] switch statements
+  - [ ] expressions
+- [ ] print to file
 
 
 # dependencies
