@@ -99,8 +99,10 @@ let main =
 ```
 
 with standard output looking like:
+```txt
 int x = 1 + 2;
 while (x < 3) {x --;}return 0;%   
+```
 
 Similarly, 
 with test1.c looking like:
@@ -125,9 +127,11 @@ Function_decl:notmain
 Function_body:
 let notmain = 
 ```
+```txt
 with standard output like :
 int x = 1 + 2;
 for (int a = 0; a < 10; a ++) {x = x + 1;}while (x < 3) {x --;}return 0;%    
+```
 
 Feel free to look at the test1.c, test2.c, testout1, and testout2 to verify this.
 
