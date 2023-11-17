@@ -43,6 +43,11 @@ let () =
   in
   main_aux 0 (fun x -> x < 5) (fun x -> x + 1)
 ```
+if input file is called csample.c, and we want to output ocaml file called ocamloutput.ml, we call the command line as follows:
+
+tocaml.exe csample.c ocamloutput.ml
+
+There is an optional flag of -w so that ocamloutput.ml will continue to be regenerated after every change of csample.c
 
 
 # todo
