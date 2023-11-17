@@ -35,10 +35,10 @@ int main() {
 to
 ```OCaml
 let () =
-  let rec main_aux (i : int) (stop : int -> bool) (inc : int -> int) : unit
+  let rec main_aux (i : int) (stop : int -> bool) (inc : int -> int) : unit =
     match stop i with
-    | True -> ()
-    | False -> (printf "Hello world";
+    | true -> ()
+    | false -> (printf "Hello world";
             main_aux (inc i) stop inc)
   in
   main_aux 0 (fun x -> x < 5) (fun x -> x + 1)
