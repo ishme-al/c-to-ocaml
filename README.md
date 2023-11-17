@@ -35,14 +35,19 @@ int main() {
 to
 ```OCaml
 let () =
-  let rec main_aux (i : int) (stop : int -> bool) (inc : int -> int) : unit
+  let rec main_aux (i : int) (stop : int -> bool) (inc : int -> int) : unit =
     match stop i with
-    | True -> ()
-    | False -> (printf "Hello world";
+    | true -> ()
+    | false -> (printf "Hello world";
             main_aux (inc i) stop inc)
   in
   main_aux 0 (fun x -> x < 5) (fun x -> x + 1)
 ```
+if input file is called csample.c, and we want to output ocaml file called ocamloutput.ml, we call the command line as follows:
+
+tocaml.exe csample.c ocamloutput.ml
+
+There is an optional flag of -w so that ocamloutput.ml will continue to be regenerated after every change of csample.c
 
 
 # todo
