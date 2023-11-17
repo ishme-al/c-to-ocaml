@@ -20,6 +20,31 @@ clangml
 parse cmdline arguments?  
 ocamlformat  
 
+# sample functionality
+covert
+```C
+#include <stdio>
+
+int main() {
+  for (int i = 0; i < 5; i++) {
+    printf("Hello World");
+  }
+  return 0;
+}
+```
+to
+```OCaml
+let () =
+  let main_aux (i : int) (stop : int -> bool) (inc : int -> int) : ()
+    match stop i with
+    | stop -> ()
+    | _ -> (printf "Hello world";
+            main_aux (inc i) stop inc)
+  in
+  main_aux 0 (fun x -> x < 5) (fun x -> x + 1)
+```
+
+
 # todo
 mli declarations
 
