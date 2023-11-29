@@ -1,22 +1,7 @@
 open Core
 open Clang
 
-(* let rec traverse_node node = *)
-(*   match node with *)
-(*   | TranslationUnit (_, decl_list, _) -> *)
-(*     List.iter traverse_decl decl_list *)
-(**)
-(* and traverse_decl decl = *)
-(*   match decl with *)
-(*   | FunctionDecl (_, name_info, _, _) -> *)
-(*     print_endline ("Function: " ^ name_info.ni_name) *)
-(*   | _ -> () *)
-(**)
-(* let traverse_ast c_ast = *)
-(*   match c_ast with *)
-(*   | TranslationUnit (_, decl_list, _) -> *)
-(*     List.iter traverse_decl decl_list *)
-(**)
+[@@@ocaml.warning "-26"]
 
 let rec visit_stmt (ast : Ast.stmt) (out : Out_channel.t) : unit =
   match ast.desc with
@@ -34,33 +19,39 @@ let visit_function_decl (ast : Ast.function_decl) (out : Out_channel.t) : unit =
 
 let visit_decl (ast : Ast.decl) (out : Out_channel.t) : unit =
   match ast.desc with
-  (* | Translation_unit decl_list -> *)
-  (*   Printf.printf "%sTranslation_unit\n" indent; *)
-  (*   List.iter (print_node (depth + 1)) decl_list *)
-
   | Function function_decl ->
     visit_function_decl function_decl out
-(*     match node.desc with *)
-(*     | { desc = Function_decl _; _ } -> *)
-(*       print_node (depth + 2) (node.desc) *)
-(*     | _ -> () *)
-(**)
-(*     | Compound_stmt stmt_list -> *)
-(*       Printf.printf "%sCompound_stmt\n" indent; *)
-(*       List.iter (print_node (depth + 1)) stmt_list *)
-(**)
-(*     | Return_stmt expr_info -> *)
-(*       Printf.printf "%sReturn_stmt\n" indent; *)
-(*       match node.desc with *)
-(*       | { desc = Integer_literal _; _ } -> *)
-(*         print_node (depth + 1) (node.desc) *)
-(*       | _ -> () *)
-(**)
-      (* | Integer_literal value -> *)
-      (*   Printf.printf "%sInteger_literal: %s\n" indent value *)
-(**)
     | _ ->
       Clang.Printer.decl Format.std_formatter ast
 
-let parse (ast : Ast.translation_unit) (out : Out_channel.t) : unit =
-  List.iter ~f:(fun item -> visit_decl item out) ast.desc.items
+
+
+
+let custom_print (depth: int) (node:Clang.Decl.t) (out : Out_channel.t) : unit =
+  let indent = String.make (2 * depth) ' ' in
+  match node.desc with
+  | Clang.Ast.Function hello ->
+    let name = match hello.name with
+      | Clang.Ast.IdentifierName a -> a 
+      | _ -> "hello" in
+    Out_channel.output_string out @@ (indent ^ "Function_decl:" ^ name ^ " \n");
+    (* Stdio.printf "%sFunction_decl: %s\n" indent name *)
+    (* Printf.printf "%s  Return Type: int\n" indent; *)
+    Out_channel.output_string out @@ (indent ^ "Function_body:" ^"\n");
+    (* Stdio.printf "%s  Function Body:\n" indent; *)
+    (* will have further recursion to print out more about what is inside function*)
+  | _ ->    Out_channel.output_string out @@ indent ^ "Unsupported \n"
+
+     (* Stdio.printf "%s  unsupported o\n" indent *)
+
+
+let visualize_ast (ast:Translation_unit.t) (out : Out_channel.t) : unit =
+  let foo =
+    match ast with
+    | { desc = { items = [foo]; _ }; _ } -> foo
+    | _ -> assert false in
+  custom_print 0 foo out
+
+  let parse (ast : Ast.translation_unit) (out : Out_channel.t) : unit =
+    let x = visualize_ast ast out in
+    List.iter ~f:(fun item -> visit_decl item out) ast.desc.items
