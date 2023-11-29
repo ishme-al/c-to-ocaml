@@ -2,12 +2,12 @@ open Core
 open Clang
 
 [@@@ocaml.warning "-26"]
-[@@@ocaml.warning "-27"]
-
 
 let rec visit_stmt (ast : Ast.stmt) (out : Out_channel.t) : unit =
   match ast.desc with
   | Compound stmt_list -> List.iter ~f:(fun stmt -> visit_stmt stmt out) stmt_list
+  | Return None -> failwith "uhoh"
+  (* | Return Some r -> Out_channel.fprintf out "return %d" @@ Int.of_string r *)
   | _ -> Clang.Printer.stmt Format.std_formatter ast
   (* | _ *)
 

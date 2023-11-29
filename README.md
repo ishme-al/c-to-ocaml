@@ -16,9 +16,9 @@ output-file: `-` for stdout
 ```
 
 # libraries/dependencies
-- clangml : to convert to C to AST
-- core.command : to parse command line arguments
-- ocamlformat
+- clangml: to convert to C to AST
+- core.command: to parse command line arguments
+- ocamlformat: format output code
 
 # sample functionality
 ##### Example 1
