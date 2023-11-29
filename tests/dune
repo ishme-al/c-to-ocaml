@@ -1,6 +1,3 @@
 (test
-  (name tests)
-  (libraries
-    core
-    ounit2
-  ))
+ (name tests)
+ (libraries core ounit2))
