@@ -27,10 +27,18 @@ let parse_func_params (ast : Ast.function_decl) : string =
 let parse_func_return_type (ast : Ast.function_decl) : string =
   parse_qual_type ast.function_type.result
 
+(* TODO: how handle operations on types other than ints? *)
+let parse_binary_operator (op_kind : Ast.binary_operator_kind) : string =
+  match op_kind with
+  | Add -> "+"
+  | Sub -> "-"
+  | _ -> failwith "handle others later"
+
 let rec visit_stmt (ast : Ast.stmt) : string =
   match ast.desc with
   | Compound stmt_list -> List.fold ~init:"" ~f:(fun s stmt -> s ^ visit_stmt stmt) stmt_list
   | Decl decl_list -> List.fold ~init:"" ~f:(fun s decl -> s ^ visit_decl decl) decl_list
+  | Return Some ret_expr -> visit_expr ret_expr 
   | Return None -> failwith "uhoh"
   (* | Return Some r -> Out_channel.fprintf out "return %d" @@ Int.of_string r *)
   | _ -> Clang.Printer.stmt Format.std_formatter ast; ""
@@ -49,8 +57,28 @@ and visit_decl (ast : Ast.decl) : string =
   match ast.desc with
   | Function function_decl ->
     visit_function_decl function_decl
+  | Var var_decl -> (
+    "let " ^ var_decl.var_name ^ " : " ^ (parse_qual_type var_decl.var_type) ^ " = " ^ (visit_expr @@ Option.value_exn var_decl.var_init) ^ " in\n"
+  )
   | _ ->
       Clang.Printer.decl Format.std_formatter ast; ""
+
+and visit_expr (ast: Ast.expr) : string =
+  match ast.desc with
+  | BinaryOperator {lhs; rhs; kind} -> (
+    visit_expr lhs ^ " " ^ parse_binary_operator kind ^ " " ^ visit_expr rhs ^ "\n"
+  )
+  | DeclRef d -> (
+    match d.name with
+    | IdentifierName name -> name
+    | _ -> assert false
+  )
+  | IntegerLiteral i -> (
+    match i with
+    | Int value -> Int.to_string value
+    | _ -> assert false
+  )
+  | _ -> Clang.Printer.expr Format.std_formatter ast; ""
 
 let custom_print (depth: int) (node:Clang.Decl.t) (out : Out_channel.t) : unit =
   let indent = String.make (2 * depth) ' ' in
