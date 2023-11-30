@@ -1,7 +1,7 @@
 (* main library function that will generate the translated code for a file *)
 (* will iterate through all of the different declarations in the file, and call the visit decl function, which will translate that declartion
    on it*)
-val parse : Clang.Ast.translation_unit -> Out_channel.t -> unit
+  val parse : Clang.Ast.translation_unit -> string
 
 (* function to generate a translation of a statement in the ast (ex: int a = 4 is a statement) *)
 (* will use pattern matching to determine the type of statement (ex: for loop, while loop, switch, assignment, etc) *)
