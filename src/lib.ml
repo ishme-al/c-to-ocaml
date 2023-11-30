@@ -32,6 +32,8 @@ let parse_binary_operator (op_kind : Ast.binary_operator_kind) : string =
   match op_kind with
   | Add -> "+"
   | Sub -> "-"
+  | LT -> "<"
+  | GT -> ">"
   | _ -> failwith "handle others later"
 
 (* TODO: how to handle return in main function?? *)
@@ -39,6 +41,13 @@ let rec visit_stmt (ast : Ast.stmt) : string =
   match ast.desc with
   | Compound stmt_list -> List.fold ~init:"" ~f:(fun s stmt -> s ^ visit_stmt stmt) stmt_list
   | Decl decl_list -> List.fold ~init:"" ~f:(fun s decl -> s ^ visit_decl decl) decl_list
+  | If {cond; then_branch; else_branch; _} -> ( (* what are init and condition_variable? *)
+    let else_string = match else_branch with
+    | Some _ -> "else \n" ^ visit_stmt (Option.value_exn else_branch)
+    | None -> ""
+    in
+    "if " ^ visit_expr cond ^ " then \n" ^ visit_stmt then_branch ^ else_string
+  )
   | Return Some ret_expr -> visit_expr ret_expr 
   | Return None -> failwith "uhoh"
   | _ -> Clang.Printer.stmt Format.std_formatter ast; ""
