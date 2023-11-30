@@ -1,7 +1,7 @@
 int foo(int a, int b) {
   int x = a + b;
-  x = 3;
-  return a + b;
+  int y = 3;
+  return x + y;
 }
 
 int main() {

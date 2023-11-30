@@ -2,7 +2,7 @@ open Core
 open Ocamlformat_lib
 
 let format (input_name : string) (output_file : string) (source : string) : string =
-  print_endline source;
+  (* print_endline source; *)
   match
     Conf.default |> Translation_unit.parse_and_format Syntax.Use_file 
                       ~output_file ~input_name ~source

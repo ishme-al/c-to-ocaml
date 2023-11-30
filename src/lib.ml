@@ -34,15 +34,14 @@ let parse_binary_operator (op_kind : Ast.binary_operator_kind) : string =
   | Sub -> "-"
   | _ -> failwith "handle others later"
 
+(* TODO: how to handle return in main function?? *)
 let rec visit_stmt (ast : Ast.stmt) : string =
   match ast.desc with
   | Compound stmt_list -> List.fold ~init:"" ~f:(fun s stmt -> s ^ visit_stmt stmt) stmt_list
   | Decl decl_list -> List.fold ~init:"" ~f:(fun s decl -> s ^ visit_decl decl) decl_list
   | Return Some ret_expr -> visit_expr ret_expr 
   | Return None -> failwith "uhoh"
-  (* | Return Some r -> Out_channel.fprintf out "return %d" @@ Int.of_string r *)
   | _ -> Clang.Printer.stmt Format.std_formatter ast; ""
-  (* | _ *)
 
 and visit_function_decl (ast : Ast.function_decl) : string =
   match ast.name with
@@ -70,13 +69,16 @@ and visit_expr (ast: Ast.expr) : string =
   )
   | DeclRef d -> (
     match d.name with
-    | IdentifierName name -> name
+    | IdentifierName name -> name ^ " "
     | _ -> assert false
   )
   | IntegerLiteral i -> (
     match i with
-    | Int value -> Int.to_string value
+    | Int value -> (Int.to_string value) ^ " "
     | _ -> assert false
+  )
+  | Call {callee; args} -> (
+    "(" ^ visit_expr callee ^ (List.fold ~init:" " ~f:(fun s arg -> s ^ visit_expr arg) args) ^ ")"
   )
   | _ -> Clang.Printer.expr Format.std_formatter ast; ""
 
@@ -104,5 +106,5 @@ let visualize_ast (ast:Translation_unit.t) (out : Out_channel.t) : unit =
   custom_print 0 foo out
 
 let parse (ast : Ast.translation_unit) : string =
-  let x = visualize_ast ast in
+  (* let x = visualize_ast ast in *)
   List.fold ~init:"" ~f:(fun s item -> s ^ visit_decl item) ast.desc.items
