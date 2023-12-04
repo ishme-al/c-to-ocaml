@@ -2,8 +2,9 @@
  (name lib)
  (modules lib)
  (libraries core clangml))
- ; (preprocess
-  ; (pps bisect_ppx)))
+
+; (preprocess
+; (pps bisect_ppx)))
 
 (executable
  (name tocaml)
