@@ -34,6 +34,7 @@ let parse_binary_operator (op_kind : Ast.binary_operator_kind) : string =
   | Sub -> "-"
   | LT -> "<"
   | GT -> ">"
+  | Assign -> "="
   | _ -> failwith "handle others later"
 
 (* TODO: how to handle return in main function?? *)
@@ -43,20 +44,36 @@ let rec visit_stmt (ast : Ast.stmt) : string =
       List.fold ~init:"" ~f:(fun s stmt -> s ^ visit_stmt stmt) stmt_list
   | Decl decl_list ->
       List.fold ~init:"" ~f:(fun s decl -> s ^ visit_decl decl) decl_list
+  | Expr expr -> visit_expr expr
   | If { cond; then_branch; else_branch; _ } ->
-      (* what are init and condition_variable? *)
-      let else_string =
+      visit_if_stmt cond then_branch else_branch
+      (* let else_string =
         match else_branch with
         | Some _ -> "else \n" ^ visit_stmt (Option.value_exn else_branch)
         | None -> ""
       in
       "if " ^ visit_expr cond ^ " then \n" ^ visit_stmt then_branch
-      ^ else_string
+      ^ else_string *)
   | Return (Some ret_expr) -> visit_expr ret_expr
   | Return None -> failwith "uhoh"
   | _ ->
       Clang.Printer.stmt Format.std_formatter ast;
       ""
+
+and visit_if_stmt (cond: Ast.expr) (then_branch: Ast.stmt) (else_branch: Ast.stmt option) : string =
+  let mutated = Collect_vars.collect_mutated_vars then_branch [] 
+    |> fun l -> match else_branch with
+      | Some e -> Collect_vars.collect_mutated_vars e l
+      | None -> l
+  in
+  let return_str = " (" ^ String.concat ~sep:"," mutated ^ ") " in
+  let else_str = 
+    match else_branch with
+    | Some e -> "else " ^ visit_stmt e ^ return_str
+    | None -> ""
+  in
+  "let " ^ return_str ^ " = if " ^ visit_expr cond ^ " then " 
+    ^ visit_stmt then_branch ^ return_str ^ else_str ^ " in\n"
 
 and visit_function_decl (ast : Ast.function_decl) : string =
   match ast.name with
@@ -71,21 +88,29 @@ and visit_function_decl (ast : Ast.function_decl) : string =
 and visit_decl (ast : Ast.decl) : string =
   match ast.desc with
   | Function function_decl -> visit_function_decl function_decl
-  | Var var_decl ->
+  | Var var_decl -> (
+    match var_decl.var_init with
+    | Some var_init ->
       "let " ^ var_decl.var_name ^ " : "
       ^ parse_qual_type var_decl.var_type
       ^ " = "
-      ^ (visit_expr @@ Option.value_exn var_decl.var_init)
+      ^ visit_expr var_init
       ^ " in\n"
+    | None -> ""
+  )
   | _ ->
       Clang.Printer.decl Format.std_formatter ast;
       ""
 
 and visit_expr (ast : Ast.expr) : string =
   match ast.desc with
-  | BinaryOperator { lhs; rhs; kind } ->
+  | BinaryOperator { lhs; rhs; kind } -> (
+    match kind with
+    | Assign -> "let " ^ visit_expr lhs ^ " = " ^ visit_expr rhs ^ " in\n"
+    | _ ->
       visit_expr lhs ^ " " ^ parse_binary_operator kind ^ " " ^ visit_expr rhs
       ^ "\n"
+    )
   | DeclRef d -> (
       match d.name with IdentifierName name -> name ^ " " | _ -> assert false)
   | IntegerLiteral i -> (

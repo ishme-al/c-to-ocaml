@@ -1,9 +1,12 @@
 (library
+  (name collect_vars)
+  (modules collect_vars)
+  (libraries core clangml))
+
+(library
  (name lib)
  (modules lib)
- (libraries core clangml)
- (preprocess
-  (pps bisect_ppx)))
+ (libraries core clangml collect_vars))
 
 (executable
  (name tocaml)
