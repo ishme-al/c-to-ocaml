@@ -8,6 +8,11 @@
 (executable
  (name tocaml)
  (modules tocaml)
- (libraries lib core core_unix.sys_unix core_unix.command_unix ocamlformat-lib)
+ (libraries
+  lib
+  core
+  core_unix.sys_unix
+  core_unix.command_unix
+  ocamlformat-lib)
  (preprocess
   (pps ppx_let)))

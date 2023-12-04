@@ -39,79 +39,88 @@ let parse_binary_operator (op_kind : Ast.binary_operator_kind) : string =
 (* TODO: how to handle return in main function?? *)
 let rec visit_stmt (ast : Ast.stmt) : string =
   match ast.desc with
-  | Compound stmt_list -> List.fold ~init:"" ~f:(fun s stmt -> s ^ visit_stmt stmt) stmt_list
-  | Decl decl_list -> List.fold ~init:"" ~f:(fun s decl -> s ^ visit_decl decl) decl_list
-  | If {cond; then_branch; else_branch; _} -> ( (* what are init and condition_variable? *)
-    let else_string = match else_branch with
-    | Some _ -> "else \n" ^ visit_stmt (Option.value_exn else_branch)
-    | None -> ""
-    in
-    "if " ^ visit_expr cond ^ " then \n" ^ visit_stmt then_branch ^ else_string
-  )
-  | Return Some ret_expr -> visit_expr ret_expr 
+  | Compound stmt_list ->
+      List.fold ~init:"" ~f:(fun s stmt -> s ^ visit_stmt stmt) stmt_list
+  | Decl decl_list ->
+      List.fold ~init:"" ~f:(fun s decl -> s ^ visit_decl decl) decl_list
+  | If { cond; then_branch; else_branch; _ } ->
+      (* what are init and condition_variable? *)
+      let else_string =
+        match else_branch with
+        | Some _ -> "else \n" ^ visit_stmt (Option.value_exn else_branch)
+        | None -> ""
+      in
+      "if " ^ visit_expr cond ^ " then \n" ^ visit_stmt then_branch
+      ^ else_string
+  | Return (Some ret_expr) -> visit_expr ret_expr
   | Return None -> failwith "uhoh"
-  | _ -> Clang.Printer.stmt Format.std_formatter ast; ""
+  | _ ->
+      Clang.Printer.stmt Format.std_formatter ast;
+      ""
 
 and visit_function_decl (ast : Ast.function_decl) : string =
   match ast.name with
-  | IdentifierName "main" -> "let () =\n" ^ visit_stmt (Option.value_exn ast.body) (* TODO: FIX *)
+  | IdentifierName "main" ->
+      "let () =\n" ^ visit_stmt (Option.value_exn ast.body) (* TODO: FIX *)
   | IdentifierName name ->
       "let " ^ name ^ " " ^ parse_func_params ast ^ ": "
-      ^ parse_func_return_type ast ^ " = \n" ^
-      visit_stmt (Option.value_exn ast.body)
+      ^ parse_func_return_type ast ^ " = \n"
+      ^ visit_stmt (Option.value_exn ast.body)
   | _ -> failwith "failure in visit_function_decl"
 
 and visit_decl (ast : Ast.decl) : string =
   match ast.desc with
-  | Function function_decl ->
-    visit_function_decl function_decl
-  | Var var_decl -> (
-    "let " ^ var_decl.var_name ^ " : " ^ (parse_qual_type var_decl.var_type) ^ " = " ^ (visit_expr @@ Option.value_exn var_decl.var_init) ^ " in\n"
-  )
+  | Function function_decl -> visit_function_decl function_decl
+  | Var var_decl ->
+      "let " ^ var_decl.var_name ^ " : "
+      ^ parse_qual_type var_decl.var_type
+      ^ " = "
+      ^ (visit_expr @@ Option.value_exn var_decl.var_init)
+      ^ " in\n"
   | _ ->
-      Clang.Printer.decl Format.std_formatter ast; ""
+      Clang.Printer.decl Format.std_formatter ast;
+      ""
 
-and visit_expr (ast: Ast.expr) : string =
+and visit_expr (ast : Ast.expr) : string =
   match ast.desc with
-  | BinaryOperator {lhs; rhs; kind} -> (
-    visit_expr lhs ^ " " ^ parse_binary_operator kind ^ " " ^ visit_expr rhs ^ "\n"
-  )
+  | BinaryOperator { lhs; rhs; kind } ->
+      visit_expr lhs ^ " " ^ parse_binary_operator kind ^ " " ^ visit_expr rhs
+      ^ "\n"
   | DeclRef d -> (
-    match d.name with
-    | IdentifierName name -> name ^ " "
-    | _ -> assert false
-  )
+      match d.name with IdentifierName name -> name ^ " " | _ -> assert false)
   | IntegerLiteral i -> (
-    match i with
-    | Int value -> (Int.to_string value) ^ " "
-    | _ -> assert false
-  )
-  | Call {callee; args} -> (
-    "(" ^ visit_expr callee ^ (List.fold ~init:" " ~f:(fun s arg -> s ^ visit_expr arg) args) ^ ")"
-  )
-  | _ -> Clang.Printer.expr Format.std_formatter ast; ""
+      match i with Int value -> Int.to_string value ^ " " | _ -> assert false)
+  | Call { callee; args } ->
+      "(" ^ visit_expr callee
+      ^ List.fold ~init:" " ~f:(fun s arg -> s ^ visit_expr arg) args
+      ^ ")"
+  | _ ->
+      Clang.Printer.expr Format.std_formatter ast;
+      ""
 
-let custom_print (depth: int) (node:Clang.Decl.t) (out : Out_channel.t) : unit =
+let custom_print (depth : int) (node : Clang.Decl.t) (out : Out_channel.t) :
+    unit =
   let indent = String.make (2 * depth) ' ' in
   match node.desc with
   | Clang.Ast.Function hello ->
-    let name = match hello.name with
-      | Clang.Ast.IdentifierName a -> a 
-      | _ -> "hello" in
-    Out_channel.output_string out @@ (indent ^ "Function_decl:" ^ name ^ " \n");
-    (* Stdio.printf "%sFunction_decl: %s\n" indent name *)
-    (* Printf.printf "%s  Return Type: int\n" indent; *)
-    Out_channel.output_string out @@ (indent ^ "Function_body:" ^"\n");
-    (* Stdio.printf "%s  Function Body:\n" indent; *)
-    (* will have further recursion to print out more about what is inside function*)
-  | _ ->    Out_channel.output_string out @@ indent ^ "Unsupported \n"
-    (* Stdio.printf "%s  unsupported o\n" indent *)
+      let name =
+        match hello.name with Clang.Ast.IdentifierName a -> a | _ -> "hello"
+      in
+      Out_channel.output_string out @@ indent ^ "Function_decl:" ^ name ^ " \n";
+      (* Stdio.printf "%sFunction_decl: %s\n" indent name *)
+      (* Printf.printf "%s  Return Type: int\n" indent; *)
+      Out_channel.output_string out @@ indent ^ "Function_body:" ^ "\n"
+      (* Stdio.printf "%s  Function Body:\n" indent; *)
+      (* will have further recursion to print out more about what is inside function*)
+  | _ -> Out_channel.output_string out @@ indent ^ "Unsupported \n"
+(* Stdio.printf "%s  unsupported o\n" indent *)
 
-let visualize_ast (ast:Translation_unit.t) (out : Out_channel.t) : unit =
+let visualize_ast (ast : Translation_unit.t) (out : Out_channel.t) : unit =
   let foo =
     match ast with
-    | { desc = { items = [foo]; _ }; _ } -> foo
-    | _ -> assert false in
+    | { desc = { items = [ foo ]; _ }; _ } -> foo
+    | _ -> assert false
+  in
   custom_print 0 foo out
 
 let parse (ast : Ast.translation_unit) : string =
