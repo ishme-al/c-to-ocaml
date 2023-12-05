@@ -16,6 +16,7 @@
   core
   core_unix.sys_unix
   core_unix.command_unix
-  ocamlformat-lib)
+  ocamlformat-lib
+  fswatch)
  (preprocess
   (pps ppx_let)))
