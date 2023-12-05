@@ -18,7 +18,11 @@ output-file: `-` for stdout
 # libraries/dependencies
 - clangml: to convert to C to AST
 - core.command: to parse command line arguments
-- ocamlformat: format output code
+- ocamlformat-lib: format output code
+
+# Design choices
+- Elegance over correctness
+- All ints are converted to pure ocaml `int`
 
 # sample functionality
 ##### Example 1
@@ -136,9 +140,9 @@ for (int a = 0; a < 10; a ++) {x = x + 1;}while (x < 3) {x --;}return 0;%
 Feel free to look at the test1.c, test2.c, testout1, and testout2 to verify this.
 
 # todo
-- [ ] c file to AST
-  - [X] file to AST
-  - [ ] stdin to AST ??
+- [x] c file to AST
+  - [x] file to AST
+  - [x] stdin to AST ??
 - [ ] translate AST to ocaml code
   - [ ] functions
   - [ ] statements
@@ -146,7 +150,7 @@ Feel free to look at the test1.c, test2.c, testout1, and testout2 to verify this
     - [ ] if statements
     - [ ] switch statements
   - [ ] expressions
-- [ ] print to file
+- [x] print to file
 
 # things to consider
 - function declaration
