@@ -19,7 +19,7 @@ output-file: `-` for stdout
 - clangml: convert C to AST
 - core.command: parse command line arguments
 - ocamlformat-lib: format output code
-- fswatch: watch filesystem. This will intsall
+- fswatch: watch filesystem
 
 ## fswatch issues
 There's currently a [bug](https://github.com/kandu/ocaml-fswatch/issues/5) with fswatch that is failing on Ubuntu (and probably all other OS's).
@@ -27,12 +27,10 @@ See [here](https://github.com/kandu/ocaml-fswatch/pull/6) for fix
 currently, you can track the fixed version of fswatch with `opam pin fswatch https://github.com/ishmeals/ocaml-fswatch.git`
 
 ## note for debian/ubuntu (derived) users
-there is a packaging issue for `libfswatch`. Here is a fix that works:
+there is a packaging [issue](https://github.com/ocaml/opam-repository/issues/22256) for `libfswatch`. Here is a fix that works:
 1. `echo "/usr/lib/x86_64-linux-gnu/libfswatch" > /etc/ld.so.conf.d/fswatch.conf && ldconfig`
 2. `LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libfswatch opam pin fswatch https://github.com/ishmeals/ocaml-fswatch.git --no-depexts` (combined with fix above)
 3. prepend `LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libfswatch` to `dune build` and such
-
-[source](https://github.com/ocaml/opam-repository/issues/22256)
 
 # Design choices
 - Elegance over correctness
@@ -152,6 +150,10 @@ for (int a = 0; a < 10; a ++) {x = x + 1;}while (x < 3) {x --;}return 0;%
 ```
 
 Feel free to look at the test1.c, test2.c, testout1, and testout2 to verify this.
+
+
+# issues
+if the file does not end in `.c` it fails
 
 # todo
 - [x] c file to AST
