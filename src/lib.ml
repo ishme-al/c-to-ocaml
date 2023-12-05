@@ -60,20 +60,22 @@ let rec visit_stmt (ast : Ast.stmt) : string =
       Clang.Printer.stmt Format.std_formatter ast;
       ""
 
-and visit_if_stmt (cond: Ast.expr) (then_branch: Ast.stmt) (else_branch: Ast.stmt option) : string =
-  let mutated = Collect_vars.collect_mutated_vars then_branch [] 
-    |> fun l -> match else_branch with
-      | Some e -> Collect_vars.collect_mutated_vars e l
-      | None -> l
+and visit_if_stmt (cond : Ast.expr) (then_branch : Ast.stmt)
+    (else_branch : Ast.stmt option) : string =
+  let mutated =
+    Collect_vars.collect_mutated_vars then_branch [] |> fun l ->
+    match else_branch with
+    | Some e -> Collect_vars.collect_mutated_vars e l
+    | None -> l
   in
   let return_str = " (" ^ String.concat ~sep:"," mutated ^ ") " in
-  let else_str = 
+  let else_str =
     match else_branch with
     | Some e -> "else " ^ visit_stmt e ^ return_str
     | None -> ""
   in
-  "let " ^ return_str ^ " = if " ^ visit_expr cond ^ " then " 
-    ^ visit_stmt then_branch ^ return_str ^ else_str ^ " in\n"
+  "let " ^ return_str ^ " = if " ^ visit_expr cond ^ " then "
+  ^ visit_stmt then_branch ^ return_str ^ else_str ^ " in\n"
 
 and visit_function_decl (ast : Ast.function_decl) : string =
   match ast.name with
@@ -89,15 +91,12 @@ and visit_decl (ast : Ast.decl) : string =
   match ast.desc with
   | Function function_decl -> visit_function_decl function_decl
   | Var var_decl -> (
-    match var_decl.var_init with
-    | Some var_init ->
-      "let " ^ var_decl.var_name ^ " : "
-      ^ parse_qual_type var_decl.var_type
-      ^ " = "
-      ^ visit_expr var_init
-      ^ " in\n"
-    | None -> ""
-  )
+      match var_decl.var_init with
+      | Some var_init ->
+          "let " ^ var_decl.var_name ^ " : "
+          ^ parse_qual_type var_decl.var_type
+          ^ " = " ^ visit_expr var_init ^ " in\n"
+      | None -> "")
   | _ ->
       Clang.Printer.decl Format.std_formatter ast;
       ""
@@ -105,12 +104,11 @@ and visit_decl (ast : Ast.decl) : string =
 and visit_expr (ast : Ast.expr) : string =
   match ast.desc with
   | BinaryOperator { lhs; rhs; kind } -> (
-    match kind with
-    | Assign -> "let " ^ visit_expr lhs ^ " = " ^ visit_expr rhs ^ " in\n"
-    | _ ->
-      visit_expr lhs ^ " " ^ parse_binary_operator kind ^ " " ^ visit_expr rhs
-      ^ "\n"
-    )
+      match kind with
+      | Assign -> "let " ^ visit_expr lhs ^ " = " ^ visit_expr rhs ^ " in\n"
+      | _ ->
+          visit_expr lhs ^ " " ^ parse_binary_operator kind ^ " "
+          ^ visit_expr rhs ^ "\n")
   | DeclRef d -> (
       match d.name with IdentifierName name -> name ^ " " | _ -> assert false)
   | IntegerLiteral i -> (
