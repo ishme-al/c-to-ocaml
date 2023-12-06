@@ -27,16 +27,15 @@ let format (output : string) (source : string) : string option =
         prerr_endline @@ ".translated.ml:\n" ^ source);
       None
 
-let write (filename : string) =
+let write (filename : string) (data : string) : unit =
   match filename with
   | "-" ->
-      fun data ->
         Out_channel.output_string stdout data;
         Out_channel.flush stdout
-  | _ -> fun data -> Out_channel.write_all filename ~data
+  | _ -> Out_channel.write_all filename ~data
 
 let transpile (input : string) (output : string) =
-  input |> read |> Lib.parse |> format output |> Option.iter ~f:(write output)
+  input |> read |> Lib.parse |> format output |> Option.iter ~f:(fun data -> write output data)
 
 let start input output =
   (* start -> transpile -> callback -> start *)
