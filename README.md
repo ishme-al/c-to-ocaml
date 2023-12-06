@@ -39,11 +39,15 @@ opam pin https://github.com/kandu/ocaml-fswatch.git
 ## for alpine, arch, debian, opensuse, oracle, ubuntu (and probably more) users
 there is a packaging [issue](https://github.com/ocaml/opam-repository/issues/22256) for `libfswatch`. Here is a fix that works (for debian/ubuntu derived? not sure about rest) (source: from the same issue)
 ```bash
+sudo apt install fswatch
 echo "/usr/lib/x86_64-linux-gnu/libfswatch" > /etc/ld.so.conf.d/fswatch.conf && ldconfig
 LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libfswatch opam pin https://github.com/kandu/ocaml-fswatch.git --no-depexts
 # ^ combined with the fswatch fix above
 ```
 then, prepend `LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libfswatch` to `dune build` and such
+
+## windows users
+fswatch requires cygwin. Have not tested this install process.
 
 # Design choices
 - Elegance over correctness
@@ -167,6 +171,9 @@ Feel free to look at the test1.c, test2.c, testout1, and testout2 to verify this
 
 # issues
 if the file does not end in `.c` it fails
+tests
+fswatch lwt/async
+fix flow function write
 
 # todo
 - [x] c file to AST
