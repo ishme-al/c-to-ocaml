@@ -1,43 +1,8 @@
 open Core
 open Clang
+open Utils
 
 [@@@ocaml.warning "-26"]
-
-(* returns the OCaml equivalent type of a qual_type *)
-let parse_qual_type (q : Ast.qual_type) : string =
-  match q.desc with
-  | BuiltinType builtintype -> (
-      match builtintype with
-      | Long | Int -> "int"
-      | UChar -> "char"
-      | Char_S -> "char"
-
-      | Float -> "float"
-      | _ -> failwith "handle others later")
-  | _ -> failwith "handle others later"
-
-let parse_func_params (ast : Ast.function_decl) : string =
-  let parse_param (acc : string) (p : Ast.parameter) =
-    acc ^ "(" ^ p.desc.name ^ " : " ^ parse_qual_type p.desc.qual_type ^ ") "
-  in
-  match ast.function_type.parameters with
-  | Some params when params.variadic ->
-      failwith "Variadic functions are not supported"
-  | Some params -> List.fold ~f:parse_param params.non_variadic ~init:""
-  | None -> ""
-
-let parse_func_return_type (ast : Ast.function_decl) : string =
-  parse_qual_type ast.function_type.result
-
-(* TODO: how handle operations on types other than ints? *)
-let parse_binary_operator (op_kind : Ast.binary_operator_kind) : string =
-  match op_kind with
-  | Add -> "+"
-  | Sub -> "-"
-  | LT -> "<"
-  | GT -> ">"
-  | Assign -> "="
-  | _ -> failwith "handle others later"
 
 (* TODO: how to handle return in main function?? *)
 let rec visit_stmt (ast : Ast.stmt) : string =
@@ -89,15 +54,11 @@ and visit_function_decl (ast : Ast.function_decl) : string =
       ^ visit_stmt (Option.value_exn ast.body)
   | _ -> failwith "failure in visit_function_decl"
 
-and visit_struct_decl (ast : Ast.record_decl ) : string = 
+and visit_struct_decl (ast : Ast.record_decl) : string =
   let name = ast.name in
-  "type " ^ name ^ " = { " ^ (List.fold ~init:"" ~f:(fun s item -> s ^ visit_decl item) ast.fields) ^ "}"  
-  
-(* and visit_field_decl (ast : Ast.field) : string = 
-  let name = 
-    match ast.name with   
-  | IdentifierName fieldName -> fieldName in   
-  name ^ ": " ^  parse_qual_type ast.qual_type ^ "; " *)
+  "type " ^ name ^ " = { "
+  ^ List.fold ~init:"" ~f:(fun s item -> s ^ visit_decl item) ast.fields
+  ^ "} \n"
 
 and visit_decl (ast : Ast.decl) : string =
   match ast.desc with
@@ -109,12 +70,10 @@ and visit_decl (ast : Ast.decl) : string =
           ^ parse_qual_type var_decl.var_type
           ^ " = " ^ visit_expr var_init ^ " in\n"
       | None -> "")
-
-  | RecordDecl struct_decl ->  
-          visit_struct_decl struct_decl        
-  | Field { name; qual_type; _} ->       
-      name ^ ": " ^  parse_qual_type qual_type ^ "; "
-    | _ ->
+  | RecordDecl struct_decl -> visit_struct_decl struct_decl
+  | Field { name; qual_type; _ } ->
+      name ^ ": " ^ parse_qual_type qual_type ^ "; "
+  | _ ->
       Clang.Printer.decl Format.std_formatter ast;
       ""
 
@@ -139,5 +98,5 @@ and visit_expr (ast : Ast.expr) : string =
       ""
 
 let parse (source : string) : string =
-  let ast = Clang.Ast.parse_string source in 
+  let ast = Clang.Ast.parse_string source in
   List.fold ~init:"" ~f:(fun s item -> s ^ visit_decl item) ast.desc.items

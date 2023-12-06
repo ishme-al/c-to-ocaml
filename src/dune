@@ -1,4 +1,9 @@
 (library
+ (name utils)
+ (modules utils)
+ (libraries core clangml))
+
+(library
  (name collect_vars)
  (modules collect_vars)
  (libraries core clangml))
@@ -6,7 +11,7 @@
 (library
  (name lib)
  (modules lib)
- (libraries core clangml collect_vars))
+ (libraries core clangml collect_vars utils))
 
 (executable
  (name tocaml)
