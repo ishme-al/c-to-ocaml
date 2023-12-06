@@ -10,7 +10,7 @@ let parse_qual_type (q : Ast.qual_type) : string =
       match builtintype with
       | Long | Int -> "int"
       | UChar -> "char"
-      | Char_s -> "char"
+      | Char_S -> "char"
 
       | Float -> "float"
       | _ -> failwith "handle others later")
