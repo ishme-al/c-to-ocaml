@@ -22,14 +22,13 @@ output-file: `-` for stdout
 - fswatch: watch filesystem
 
 ## fswatch issues
-There's currently a [bug](https://github.com/kandu/ocaml-fswatch/issues/5) with fswatch that is failing on Ubuntu (and probably all other OS's).
-See [here](https://github.com/kandu/ocaml-fswatch/pull/6) for fix
-currently, you can track the fixed version of fswatch with `opam pin fswatch https://github.com/ishmeals/ocaml-fswatch.git`
+We just [fixed a bug](https://github.com/kandu/ocaml-fswatch/pull/6) with fswatch.
+For now, run `opam pin https://github.com/kandu/ocaml-fswatch.git` (until it gets [merged](https://github.com/ocaml/opam-repository/pull/24902) into opam)
 
-## note for debian/ubuntu (derived) users
-there is a packaging [issue](https://github.com/ocaml/opam-repository/issues/22256) for `libfswatch`. Here is a fix that works:
+## for alpine, arch, debian, opensuse, oracle, ubuntu users
+there is a packaging [issue](https://github.com/ocaml/opam-repository/issues/22256) for `libfswatch`. Here is a fix that works (for debian/ubuntu derived? not sure about rest)
 1. `echo "/usr/lib/x86_64-linux-gnu/libfswatch" > /etc/ld.so.conf.d/fswatch.conf && ldconfig`
-2. `LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libfswatch opam pin fswatch https://github.com/ishmeals/ocaml-fswatch.git --no-depexts` (combined with fix above)
+2. `LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libfswatch opam pin fswatch https://github.com/kandu/ocaml-fswatch.git --no-depexts` (combined with fix above)
 3. prepend `LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libfswatch` to `dune build` and such
 
 # Design choices
