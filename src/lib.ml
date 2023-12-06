@@ -146,6 +146,6 @@ let visualize_ast (ast : Translation_unit.t) (out : Out_channel.t) : unit =
   in
   custom_print 0 foo out
 
-let parse (ast : Ast.translation_unit) : string =
-  (* let x = visualize_ast ast in *)
+let parse (source : string) : string =
+  let ast = Clang.Ast.parse_string source in 
   List.fold ~init:"" ~f:(fun s item -> s ^ visit_decl item) ast.desc.items
