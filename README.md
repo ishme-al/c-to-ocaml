@@ -73,7 +73,7 @@ let () =
     | false -> (printf "Hello world";
             main_aux (inc i) stop inc)
   in
-  main_aux 0 (fun x -> x < 5) (fun x -> x + 1);
+  main_aux 0 (fun x -> x >= 5) (fun x -> x + 1);
 ```
 
 ##### Example 2
@@ -180,22 +180,29 @@ fix flow function write
   - [x] file to AST
   - [x] stdin to AST ??
 - [ ] translate AST to ocaml code
-  - [ ] functions
+  - [x] functions
+    - [x] parsing parameters
   - [ ] statements
     - [ ] for-loop
-    - [ ] if statements
+    - [x] if statements
     - [ ] switch statements
   - [ ] expressions
+- [x] format output string
 - [x] print to file
+- [ ] watch feature
+
+# things to implement
+- [x] function declaration
+- [x] structs
+- [ ] operations for non-int types
+- [ ] arrays
+- [ ] enums
+- [ ] i/o (to stdin stdout only?)
 
 # things to consider
-- function declaration
-- structs
 - pointers
 - memory arithmetic
-- arrays
 - macros
-- enums
 - unions
 - typedefs
 - casts
