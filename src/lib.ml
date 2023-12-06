@@ -87,6 +87,16 @@ and visit_function_decl (ast : Ast.function_decl) : string =
       ^ visit_stmt (Option.value_exn ast.body)
   | _ -> failwith "failure in visit_function_decl"
 
+and visit_struct_decl (ast : Ast.record_decl ) : string = 
+  let name = ast.name in
+  "type " ^ name ^ " = { " ^ (List.fold ~init:"" ~f:(fun s item -> s ^ visit_decl item) ast.fields) ^ "}"  
+  
+(* and visit_field_decl (ast : Ast.field) : string = 
+  let name = 
+    match ast.name with   
+  | IdentifierName fieldName -> fieldName in   
+  name ^ ": " ^  parse_qual_type ast.qual_type ^ "; " *)
+
 and visit_decl (ast : Ast.decl) : string =
   match ast.desc with
   | Function function_decl -> visit_function_decl function_decl
@@ -97,7 +107,12 @@ and visit_decl (ast : Ast.decl) : string =
           ^ parse_qual_type var_decl.var_type
           ^ " = " ^ visit_expr var_init ^ " in\n"
       | None -> "")
-  | _ ->
+
+  | RecordDecl struct_decl ->  
+          visit_struct_decl struct_decl        
+  | Field { name; qual_type; _} ->       
+      name ^ ": " ^  parse_qual_type qual_type ^ "; "
+    | _ ->
       Clang.Printer.decl Format.std_formatter ast;
       ""
 
@@ -120,31 +135,6 @@ and visit_expr (ast : Ast.expr) : string =
   | _ ->
       Clang.Printer.expr Format.std_formatter ast;
       ""
-
-let custom_print (depth : int) (node : Clang.Decl.t) (out : Out_channel.t) :
-    unit =
-  let indent = String.make (2 * depth) ' ' in
-  match node.desc with
-  | Clang.Ast.Function hello ->
-      let name =
-        match hello.name with Clang.Ast.IdentifierName a -> a | _ -> "hello"
-      in
-      Out_channel.output_string out @@ indent ^ "Function_decl:" ^ name ^ " \n";
-      (* Stdio.printf "%sFunction_decl: %s\n" indent name *)
-      (* Printf.printf "%s  Return Type: int\n" indent; *)
-      Out_channel.output_string out @@ indent ^ "Function_body:" ^ "\n"
-      (* Stdio.printf "%s  Function Body:\n" indent; *)
-      (* will have further recursion to print out more about what is inside function*)
-  | _ -> Out_channel.output_string out @@ indent ^ "Unsupported \n"
-(* Stdio.printf "%s  unsupported o\n" indent *)
-
-let visualize_ast (ast : Translation_unit.t) (out : Out_channel.t) : unit =
-  let foo =
-    match ast with
-    | { desc = { items = [ foo ]; _ }; _ } -> foo
-    | _ -> assert false
-  in
-  custom_print 0 foo out
 
 let parse (source : string) : string =
   let ast = Clang.Ast.parse_string source in 
