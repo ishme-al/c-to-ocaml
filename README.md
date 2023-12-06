@@ -21,6 +21,12 @@ output-file: `-` for stdout
 - fswatch: watch filesystem
 - ocamlformat-lib: format output code
 
+## ocamlformat-lib issues
+since this [fix](https://github.com/ocaml-ppx/ocamlformat/pull/2481) is not merged into opam, you will need to run
+```bash
+opam pin https://github.com/ocaml-ppx/ocamlformat.git
+```
+
 ## fswatch issues
 We just [fixed a bug](https://github.com/kandu/ocaml-fswatch/pull/6) with fswatch.
 For now (until it gets [merged](https://github.com/ocaml/opam-repository/pull/24902) into opam), run
@@ -32,7 +38,8 @@ opam pin https://github.com/kandu/ocaml-fswatch.git
 there is a packaging [issue](https://github.com/ocaml/opam-repository/issues/22256) for `libfswatch`. Here is a fix that works (for debian/ubuntu derived? not sure about rest) (source: from the same issue)
 ```bash
 echo "/usr/lib/x86_64-linux-gnu/libfswatch" > /etc/ld.so.conf.d/fswatch.conf && ldconfig
-LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libfswatch opam pin fswatch https://github.com/kandu/ocaml-fswatch.git --no-depexts # combined with the fix above
+LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libfswatch opam pin fswatch https://github.com/kandu/ocaml-fswatch.git --no-depexts
+# ^ combined with the fswatch fix above
 ```
 then, prepend `LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libfswatch` to `dune build` and such
 
