@@ -22,7 +22,7 @@ output-file: `-` for stdout
 - ocamlformat-lib: format output code
 
 ## ocamlformat-lib issues
-since this [fix](https://github.com/ocaml-ppx/ocamlformat/pull/2481) is not merged into opam, you will need to run
+since this [fix](https://github.com/ocaml-ppx/ocamlformat/pull/2481) is not merged into opam (waiting for a release after 0.26.1), you will need to run
 ```bash
 opam pin ocamlformat https://github.com/ocaml-ppx/ocamlformat.git
 opam pin ocamlformat-lib https://github.com/ocaml-ppx/ocamlformat.git
@@ -36,7 +36,7 @@ For now (until it gets [merged](https://github.com/ocaml/opam-repository/pull/24
 opam pin https://github.com/kandu/ocaml-fswatch.git
 ```
 
-## for alpine, arch, debian, opensuse, oracle, ubuntu (and probably more) users
+### alpine, arch, debian, opensuse, oracle, ubuntu (and probably more) users
 there is a packaging [issue](https://github.com/ocaml/opam-repository/issues/22256) for `libfswatch`. Here is a fix that works (for debian/ubuntu derived? not sure about rest) (source: from the same issue)
 ```bash
 sudo apt install fswatch
@@ -46,7 +46,7 @@ LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libfswatch opam pin https://github.com/ka
 ```
 then, prepend `LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libfswatch` to `dune build` and such
 
-## windows users
+### windows users
 fswatch requires cygwin. Have not tested this install process.
 
 # Design choices
