@@ -5,27 +5,28 @@ open Utils
 [@@@ocaml.warning "-26"]
 
 (* TODO: how to handle return in main function?? *)
-let rec visit_stmt (ast : Ast.stmt) (func_name : string): string =
+let rec visit_stmt (ast : Ast.stmt) (func_name : string) : string =
   match ast.desc with
   | Compound stmt_list ->
-      List.fold ~init:"" ~f:(fun s stmt -> s ^ visit_stmt stmt func_name) stmt_list
+      List.fold ~init:""
+        ~f:(fun s stmt -> s ^ visit_stmt stmt func_name)
+        stmt_list
   | Decl decl_list ->
       List.fold ~init:"" ~f:(fun s decl -> s ^ visit_decl decl) decl_list
   | Expr expr -> visit_expr expr
   | If { cond; then_branch; else_branch; _ } ->
       visit_if_stmt cond then_branch else_branch func_name
   | Return (Some ret_expr) -> (
-    match func_name with 
-    | "main" -> "exit(" ^ visit_expr ret_expr ^ ")\n"
-    | _ -> visit_expr ret_expr
-  )
+      match func_name with
+      | "main" -> "exit(" ^ visit_expr ret_expr ^ ")\n"
+      | _ -> visit_expr ret_expr)
   | Return None -> failwith "uhoh"
   | _ ->
       Clang.Printer.stmt Format.std_formatter ast;
       ""
 
 and visit_if_stmt (cond : Ast.expr) (then_branch : Ast.stmt)
-    (else_branch : Ast.stmt option) (func_name : string): string =
+    (else_branch : Ast.stmt option) (func_name : string) : string =
   let mutated =
     Collect_vars.collect_mutated_vars then_branch [] |> fun l ->
     match else_branch with
@@ -39,12 +40,14 @@ and visit_if_stmt (cond : Ast.expr) (then_branch : Ast.stmt)
     | None -> ""
   in
   "let " ^ return_str ^ " = if " ^ visit_expr cond ^ " then "
-  ^ visit_stmt then_branch func_name ^ return_str ^ else_str ^ " in\n"
+  ^ visit_stmt then_branch func_name
+  ^ return_str ^ else_str ^ " in\n"
 
 and visit_function_decl (ast : Ast.function_decl) : string =
   match ast.name with
   | IdentifierName "main" ->
-      "let () =\n" ^ visit_stmt (Option.value_exn ast.body) "main" (* TODO: FIX *)
+      "let () =\n"
+      ^ visit_stmt (Option.value_exn ast.body) "main" (* TODO: FIX *)
   | IdentifierName name ->
       "let " ^ name ^ " " ^ parse_func_params ast ^ ": "
       ^ parse_func_return_type ast ^ " = \n"
@@ -57,10 +60,10 @@ and visit_struct_decl (ast : Ast.record_decl) : string =
   ^ List.fold ~init:"" ~f:(fun s item -> s ^ visit_decl item) ast.fields
   ^ "} \n"
 
-and visit_decl (ast : Ast.decl): string =
+and visit_decl (ast : Ast.decl) : string =
   match ast.desc with
   | Function function_decl -> visit_function_decl function_decl
-  | Var var_decl -> ( 
+  | Var var_decl -> (
       match var_decl.var_init with
       | Some var_init ->
           "let " ^ var_decl.var_name ^ " : "

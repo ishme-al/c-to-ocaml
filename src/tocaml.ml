@@ -30,12 +30,13 @@ let format (output : string) (source : string) : string option =
 let write (filename : string) (data : string) : unit =
   match filename with
   | "-" ->
-        Out_channel.output_string stdout data;
-        Out_channel.flush stdout
+      Out_channel.output_string stdout data;
+      Out_channel.flush stdout
   | _ -> Out_channel.write_all filename ~data
 
 let transpile (input : string) (output : string) =
-  input |> read |> Lib.parse |> format output |> Option.iter ~f:(fun data -> write output data)
+  input |> read |> Lib.parse |> format output
+  |> Option.iter ~f:(fun data -> write output data)
 
 let start input output =
   (* start -> transpile -> callback -> start *)
