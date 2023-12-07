@@ -1,0 +1,183 @@
+{
+    Clang.Ast.decoration = Clang.Ast.Cursor <abstr>;
+    desc =
+    {
+        Clang.Ast.filename = "tests/source/structs.c";
+        items =
+        [
+            {
+                Clang.Ast.decoration = Clang.Ast.Cursor <abstr>;
+                desc =
+                    Clang.Ast.RecordDecl
+                        {
+                            Clang.Ast.keyword = Clang__.Clang__bindings.Struct; attributes = [];
+                            nested_name_specifier = None; name = "myStructure"; bases = [];
+                            fields =
+                            [
+                                {Clang.Ast.decoration = Clang.Ast.Cursor <abstr>;
+                                    desc =
+                                    Clang.Ast.Field
+                                    {Clang.Ast.name = "a";
+                                        qual_type =
+                                        {Clang.Ast.cxtype = <abstr>; type_loc = Some <abstr>;
+                                        const = false; volatile = false; restrict = false;
+                                        desc = Clang.Ast.BuiltinType Clang__.Clang__bindings.Int};
+                                        bitwidth = None; init = None; attributes = []}};
+                                    {Clang.Ast.decoration = Clang.Ast.Cursor <abstr>;
+                                    desc =
+                                    Clang.Ast.Field
+                                    {Clang.Ast.name = "b";
+                                        qual_type =
+                                        {Clang.Ast.cxtype = <abstr>; type_loc = Some <abstr>;
+                                        const = false; volatile = false; restrict = false;
+                                        desc = Clang.Ast.BuiltinType Clang__.Clang__bindings.Int};
+                                        bitwidth = None; init = None; attributes = []}};
+                                    {Clang.Ast.decoration = Clang.Ast.Cursor <abstr>;
+                                    desc =
+                                    Clang.Ast.Field
+                                    {Clang.Ast.name = "c";
+                                        qual_type =
+                                        {Clang.Ast.cxtype = <abstr>; type_loc = Some <abstr>;
+                                        const = false; volatile = false; restrict = false;
+                                        desc = Clang.Ast.BuiltinType Clang__.Clang__bindings.Char_S};
+                                        bitwidth = None; init = None; attributes = []}}
+                                ];
+                            final = false; complete_definition = true;
+                            is_injected_class_name = false}};
+       {
+        Clang.Ast.decoration = Clang.Ast.Cursor <abstr>;
+        desc =
+         Clang.Ast.Function
+          {
+            Clang.Ast.linkage = Clang__.Clang__bindings.External;
+            storage = Clang__.Clang__bindings.None;
+            function_type =
+                {
+                    Clang.Ast.calling_conv = Clang__.Clang__bindings.C;
+                    result =
+                        {Clang.Ast.cxtype = <abstr>; type_loc = Some <abstr>;
+                        const = false; volatile = false; restrict = false;
+                        desc = Clang.Ast.BuiltinType Clang__.Clang__bindings.Int};
+                    parameters =
+                        Some
+                        {
+                            Clang.Ast.non_variadic =
+                            [
+                                {
+                                    Clang.Ast.decoration = Clang.Ast.Cursor <abstr>;
+                                    desc =
+                                        {
+                                            Clang.Ast.qual_type =
+                                                {
+                                                    Clang.Ast.cxtype = <abstr>; type_loc = Some <abstr>;
+                                                    const = false; volatile = false; restrict = false;
+                                                    desc =
+                                                    Clang.Ast.Elaborated
+                                                    {
+                                                        Clang.Ast.keyword = Clang__.Clang__bindings.Struct;
+                                                        nested_name_specifier = None;
+                                                        named_type =
+                                                        {
+                                                            Clang.Ast.cxtype = <abstr>;
+                                                            type_loc = Some <abstr>; const = false;
+                                                            volatile = false; restrict = false;
+                                                            desc =
+                                                            Clang.Ast.Record
+                                                            {
+                                                                Clang.Ast.nested_name_specifier = None;
+                                                                name = Clang.Ast.IdentifierName "myStructure";
+                                                                template_arguments = []
+                                                            }
+                                                        }
+                                                    }
+                                                };
+                                            name = "str"; 
+                                            default = None
+                                        }
+                                }
+                            ];
+                            variadic = false
+                        };
+                        exception_spec = None;
+                        ref_qualifier = Clang__.Clang__bindings.None
+                };
+           nested_name_specifier = None;
+           name = Clang.Ast.IdentifierName "addAB";
+           body =
+            Some
+             {
+                Clang.Ast.decoration = Clang.Ast.Cursor <abstr>;
+                desc =
+                    Clang.Ast.Compound
+                        [
+                            {
+                                Clang.Ast.decoration = Clang.Ast.Cursor <abstr>;
+                                desc =
+                                    Clang.Ast.Return
+                                    (
+                                        Some
+                                        {
+                                            Clang.Ast.decoration = Clang.Ast.Cursor <abstr>;
+                                            desc =
+                                                Clang.Ast.BinaryOperator
+                                                {
+                                                    Clang.Ast.lhs =
+                                                    {
+                                                        Clang.Ast.decoration = Clang.Ast.Cursor <abstr>;
+                                                        desc =
+                                                            Clang.Ast.Member
+                                                            {
+                                                                Clang.Ast.base =
+                                                                    Some
+                                                                    {
+                                                                        Clang.Ast.decoration =
+                                                                        Clang.Ast.Cursor <abstr>;
+                                                                        desc =
+                                                                            Clang.Ast.DeclRef
+                                                                            {
+                                                                                Clang.Ast.nested_name_specifier = None;
+                                                                                name = Clang.Ast.IdentifierName "str";
+                                                                                template_arguments = []
+                                                                            }
+                                                                    };
+                                                                arrow = false;
+                                                                field =
+                                                                    Clang.Ast.FieldName
+                                                                    {
+                                                                        Clang.Ast.decoration =
+                                                                        Clang.Ast.Cursor <abstr>;
+                                                                        desc =
+                                                                        {
+                                                                            Clang.Ast.nested_name_specifier = None;
+                                                                            name = Clang.Ast.IdentifierName "a";
+                                                                            template_arguments = []
+                                                                        }
+                                                                    }
+                                                            }
+                                                    };
+                                                    kind = Clang__.Clang__bindings.Add;
+                                                    rhs =
+                                                    {Clang.Ast.decoration = Clang.Ast.Cursor <abstr>;
+                                                    desc =
+                                                        Clang.Ast.Member
+                                                        {Clang.Ast.base =
+                                                        Some
+                                                            {Clang.Ast.decoration =
+                                                            Clang.Ast.Cursor <abstr>;
+                                                            desc =
+                                                            Clang.Ast.DeclRef
+                                                            {Clang.Ast.nested_name_specifier = None;
+                                                                name = Clang.Ast.IdentifierName "str";
+                                                                template_arguments = []}};
+                                                        arrow = false;
+                                                        field =
+                                                        Clang.Ast.FieldName
+                                                            {Clang.Ast.decoration =
+                                                            Clang.Ast.Cursor <abstr>;
+                                                            desc =
+                                                            {Clang.Ast.nested_name_specifier = None;
+                                                            name = Clang.Ast.IdentifierName "b";
+                                                            template_arguments = []}}}}}})}]};
+           deleted = false; constexpr = false; inline_specified = false;
+           inlined = false; attributes = []; has_written_prototype = true}};
+       ...]}}
