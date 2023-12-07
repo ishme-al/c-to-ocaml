@@ -1,1 +1,1 @@
-let () = 0
+let () = exit 0

@@ -15,6 +15,11 @@ output-file: `-` for stdout
   [-help], -?                . print this help text and exit
 ```
 
+# issues
+* if the file does not end in `.c` it fails
+* tests
+* fix fswatch
+
 # libraries/dependencies
 - core: is good
 - clangml: convert C to AST
@@ -167,13 +172,6 @@ for (int a = 0; a < 10; a ++) {x = x + 1;}while (x < 3) {x --;}return 0;%
 ```
 
 Feel free to look at the test1.c, test2.c, testout1, and testout2 to verify this.
-
-
-# issues
-if the file does not end in `.c` it fails
-tests
-fswatch lwt/async
-fix flow function write
 
 # todo
 - [x] c file to AST

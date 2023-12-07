@@ -15,4 +15,4 @@ let foo (a : int) (b : int) : int =
 
 let () =
   let x : int = foo (foo 4 6) 3 in
-  0
+  exit 0
