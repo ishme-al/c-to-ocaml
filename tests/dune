@@ -1,8 +1,6 @@
 (test
  (name tests)
- (libraries core ounit2 lib utils)
- )
-
+ (libraries core ounit2 lib utils))
 
 ; Fill in this file.
 ;

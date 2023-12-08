@@ -11,11 +11,22 @@ open Lib;;
 
 let comments = "
 // #include <stdio.h>
+// #include <stdio.h>
 int main()
 {
     int x = 1 + 2;
+    return 0;
 }
 
+//manual parse:
+
+// look for basic keywords;
+// de limit based on semi colons
+// ask for input data types?
+// ex: if user provides ocaml implementation for a file, we can map to it.
+// if start with type declaration
+// if start with variable name
+// if start with functionName (delimit further based on ()
 //manual parse:
 
 // look for basic keywords;
@@ -34,6 +45,7 @@ main()
     int x = 1
      +
       2;
+      return        0;
 }
 
 //manual parse:
@@ -165,14 +177,14 @@ int main() {
     int b = z - y;
     int c = z * y;
     int d = z / y;
-    float a = 13;
+    float e = 13;
 
     return 0;
 
 }
 "
 
-let structTest = "
+let struct_test = "
 struct myStruct {
   int a;
   int b;
@@ -216,7 +228,7 @@ int divideAb ( struct myStructure str) {
 (* do a string comparison of transpuled code and the expected transpiled code*)
 (* please see the tests/transpiled folder to see the equivalent code formmated automatically**)
 let test_transpiler _ =
-  assert_equal ("let () =\nlet x : int = 1  + 2 \n in\n") (parse comments);
+  assert_equal ("let () =\nlet x : int = 1  + 2 \n in\nexit(0 )\n") (parse comments);
 
   assert_equal ("let foo (a : int) (b : int) : int = \nlet  (y,x)  = if a  < b \n then let z : int = 2  in\nlet x  = b  - a \n in\nlet y  = z  + a \n in\n (y,x) else let z : int = 3  in\nlet x  = a  - b \n in\nlet y  = z  + b \n in\n (y,x)  in\nx  + y \nlet () =\nlet x : int = (foo  (foo  4 6 )3 ) in\nexit(0 )\n") (parse foofunction1);
   assert_equal ("let foo (a : int) (b : int) : int = \nlet x : int = a  in\nlet y : int = b  in\nx  + y \nlet () =\nlet x : int = (foo  (foo  4 6 )3 ) in\nexit(0 )\n"  ) (parse foofunction2);
@@ -225,9 +237,9 @@ let test_transpiler _ =
 
   assert_equal ("let () =\nlet a  = 2  in\nexit(0 )\n") (parse intTest);
   assert_equal ("let () =\nexit(0 )\n") (parse main);
-  assert_equal ("let () =\nlet x : int = 2  in\nlet y : int = 3  in\nlet z : int = 4  in\nlet a : int = x  + y \n in\nlet b : int = z  - y \n in\nlet c : int = z  * y \n in\nlet d : int = z  / y \n in\nexit(0 )\n") (parse statements);
-  assert_equal ("type myStruct = { a: int; b: int; c: float; d: char; } ") (parse structTest);
-  (* get a weird output error on this test, but the translation is still correct*)
+  assert_equal ("let () =\nlet x : int = 2  in\nlet y : int = 3  in\nlet z : int = 4  in\nlet a : int = x  + y \n in\nlet b : int = z  - y \n in\nlet c : int = z  * y \n in\nlet d : int = z  / y \n in\nlet e : float = 13  in\nexit(0 )\n") (parse statements);
+  assert_equal ("type myStruct = { a: int; b: int; c: float; d: char; } ") (parse struct_test);
+  (* get a weird output error to stdout on this test, but the transpiled file is still correct*)
   assert_equal ("type myStructure = { a: int; b: int; c: char; d: float; } let transformAB (str : myStructure) : int = \nlet c : int = str.a  * str.b \n in\nlet b : int = str.a  + str.b \n in\nb  + c \nlet addAb (str : myStructure) : int = \nstr.a  + str.b \nlet multAb (str : myStructure) : int = \nstr.a  * str.b \nlet subAb (str : myStructure) : int = \nstr.a  - str.b \nlet divideAb (str : myStructure) : int = \nstr.a  / str.b \n") (parse struct2)
 
 
@@ -241,10 +253,11 @@ let transpiler_tests =
   "test_transpiler"
   >::: [
           "test_transpiler" >:: test_transpiler ;
+          "test_whitespace" >:: test_white_space_makes_no_change;
         ]
   
 let series =
-"Assignment4 Tests"
+"Transpiler tests for string"
 >::: [
        transpiler_tests;
       ]

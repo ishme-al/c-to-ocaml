@@ -11,15 +11,15 @@ let parse_qual_type (q : Ast.qual_type) : string =
       | Char_S -> "char"
       | Float -> "float"
       | _ -> failwith "handle others later")
-    (* will refactor into two helpers later, but focused on functionality instead of digging through documentation to find appropriate record equivalent for now*)
-  | Ast.Elaborated structType ->
-    (match structType.named_type with 
+  (* will refactor into two helpers later, but focused on functionality instead of digging through documentation to find appropriate record equivalent for now*)
+  | Ast.Elaborated struct_type ->
+    (match struct_type.named_type with 
      | {desc=record;_} -> 
        (match record with 
-        | Ast.Record recordObject-> 
-          (match recordObject.name with
-           | IdentifierName myName ->
-             myName
+        | Ast.Record record_object-> 
+          (match record_object.name with
+           | IdentifierName my_name ->
+             my_name
            | _ -> failwith "handle others later" )
         | _ -> failwith "handle others later")
     )

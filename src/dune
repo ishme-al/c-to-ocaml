@@ -3,22 +3,20 @@
  (modules utils)
  (libraries core clangml)
  (preprocess
-  (pps bisect_ppx))
-
- )
+  (pps bisect_ppx)))
 
 (library
  (name collect_vars)
  (modules collect_vars)
  (libraries core clangml)
-  (preprocess
+ (preprocess
   (pps bisect_ppx)))
 
 (library
  (name lib)
  (modules lib)
  (libraries core clangml collect_vars utils)
-  (preprocess
+ (preprocess
   (pps bisect_ppx)))
 
 (executable

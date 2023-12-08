@@ -58,6 +58,13 @@ fswatch requires cygwin. Have not tested this install process.
 - Elegance over correctness
 - All ints are converted to pure ocaml `int`
 
+# Description
+Please see todo and things to implement sections for what is working so far.
+We are able to do most basic operations and comparisons for integers, and declare structs with character and float types (but cannot do character or float operations yet).
+See tests/source/ to see c source files and tests/transpiled to see the ocaml version of that code the transpiler generates.
+See tests/tests.ml that take in strings of c code and verify they match expected ocaml code (see the transpiled folder to sett a formatted version of that ocaml code).
+With if statements working so far, we have core logic for loops mostly there as well (though as loops.ml indicates, it does not work yet).
+
 # sample functionality
 ##### Example 1
 ```C
@@ -187,7 +194,7 @@ Feel free to look at the test1.c, test2.c, testout1, and testout2 to verify this
   - [ ] expressions
 - [x] format output string
 - [x] print to file
-- [ ] watch feature
+- [ ] watch feature (partially done)
 
 # things to implement
 - [x] function declaration
