@@ -12,17 +12,15 @@ let parse_qual_type (q : Ast.qual_type) : string =
       | Float -> "float"
       | _ -> failwith "handle others later")
   (* will refactor into two helpers later, but focused on functionality instead of digging through documentation to find appropriate record equivalent for now*)
-  | Ast.Elaborated struct_type ->
-    (match struct_type.named_type with 
-     | {desc=record;_} -> 
-       (match record with 
-        | Ast.Record record_object-> 
-          (match record_object.name with
-           | IdentifierName my_name ->
-             my_name
-           | _ -> failwith "handle others later" )
-        | _ -> failwith "handle others later")
-    )
+  | Elaborated struct_type -> (
+      match struct_type.named_type with
+      | { desc = record; _ } -> (
+          match record with
+          | Record record_object -> (
+              match record_object.name with
+              | IdentifierName my_name -> my_name
+              | _ -> failwith "handle others later")
+          | _ -> failwith "handle others later"))
   | _ -> failwith "handle others later"
 
 let parse_func_params (ast : Ast.function_decl) : string =
@@ -31,7 +29,7 @@ let parse_func_params (ast : Ast.function_decl) : string =
   in
   match ast.function_type.parameters with
   | Some params when params.variadic ->
-    failwith "Variadic functions are not supported"
+      failwith "Variadic functions are not supported"
   | Some params -> List.fold ~f:parse_param params.non_variadic ~init:""
   | None -> ""
 
@@ -40,7 +38,6 @@ let parse_func_return_type (ast : Ast.function_decl) : string =
 
 (* TODO: how handle operations on types other than ints? *)
 let parse_binary_operator (op_kind : Ast.binary_operator_kind) : string =
-
   match op_kind with
   | Add -> "+"
   | Sub -> "-"

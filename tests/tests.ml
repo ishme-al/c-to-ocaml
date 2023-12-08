@@ -3,263 +3,308 @@
 *)
 
 (* open Core;; *)
-open OUnit2;;
-open Lib;;
+open OUnit2
+open Lib
+
 [@@@ocaml.warning "-32"]
 
+let comments =
+  "\n\
+   // #include <stdio.h>\n\
+   // #include <stdio.h>\n\
+   int main()\n\
+   {\n\
+  \    int x = 1 + 2;\n\
+  \    return 0;\n\
+   }\n\n\
+   //manual parse:\n\n\
+   // look for basic keywords;\n\
+   // de limit based on semi colons\n\
+   // ask for input data types?\n\
+   // ex: if user provides ocaml implementation for a file, we can map to it.\n\
+   // if start with type declaration\n\
+   // if start with variable name\n\
+   // if start with functionName (delimit further based on ()\n\
+   //manual parse:\n\n\
+   // look for basic keywords;\n\
+   // de limit based on semi colons\n\
+   // ask for input data types?\n\
+   // ex: if user provides ocaml implementation for a file, we can map to it.\n\
+   // if start with type declaration\n\
+   // if start with variable name\n\
+   // if start with functionName (delimit further based on ()\n"
 
+let comments_with_weird_spacing =
+  "\n\
+   // #include <stdio.h>\n\
+   int\n\
+   main()\n\
+   {\n\
+  \    int x = 1\n\
+  \     +\n\
+  \      2;\n\
+  \      return        0;\n\
+   }\n\n\
+   //manual parse:\n\n\
+   // look for basic keywords;\n\
+   //             de limit based on semi colons\n\
+   // ask for input data types?\n\
+   //        ex: if user provides ocaml implementation for a file, we can map \
+   to it.\n\
+   // if start with type declaration\n\
+   //                  if start with variable name\n\
+   // if start with functionName (delimit further based on ()\n"
 
-let comments = "
-// #include <stdio.h>
-// #include <stdio.h>
-int main()
-{
-    int x = 1 + 2;
-    return 0;
-}
+let foofunction1 =
+  "\n\
+   int foo(int a, int b) {\n\
+  \  int x;\n\
+  \  int y;\n\
+  \  if (a < b) {\n\
+  \    int z = 2;\n\
+  \    x = b - a;\n\
+  \    y = z + a;\n\
+  \  } else {\n\
+  \    int z = 3;\n\
+  \    x = a - b;\n\
+  \    y = z + b;\n\
+  \  }\n\
+  \  return x + y;\n\
+   }\n\n\
+   int main() {\n\
+  \  int x = foo(foo(4, 6), 3);\n\
+  \  return 0;\n\
+   }\n"
 
-//manual parse:
+let foofunction1_with_weird_spacing =
+  "\n\
+   int foo(int a, int b) {\n\
+  \  int x;\n\
+  \        int y;\n\
+  \  if (a < b) {\n\
+  \    int z = 2;\n\
+  \            x = b - a;\n\
+  \    y = z + a;\n\
+  \  } \n\
+   else {\n\
+  \         int z = 3;\n\
+  \    x = a - b;\n\
+  \        y = z + b;\n\
+  \  }\n\
+  \  return x + y;\n\
+   }\n\n\
+   int main() {\n\
+  \  int x = foo(foo(4, 6), 3);\n\
+  \  return 0;\n\
+   }\n"
 
-// look for basic keywords;
-// de limit based on semi colons
-// ask for input data types?
-// ex: if user provides ocaml implementation for a file, we can map to it.
-// if start with type declaration
-// if start with variable name
-// if start with functionName (delimit further based on ()
-//manual parse:
+let foofunction2 =
+  "\n\
+   int foo(int a, int b) {\n\
+  \  int x = a;\n\
+  \  int y = b;\n\
+  \  return x + y;\n\
+   }\n\n\
+   int main() {\n\
+  \  int x = foo(foo(4, 6), 3);\n\
+  \  return 0;\n\
+   }\n"
 
-// look for basic keywords;
-// de limit based on semi colons
-// ask for input data types?
-// ex: if user provides ocaml implementation for a file, we can map to it.
-// if start with type declaration
-// if start with variable name
-// if start with functionName (delimit further based on ()
-"
-let comments_with_weird_spacing = "
-// #include <stdio.h>
-int
-main()
-{
-    int x = 1
-     +
-      2;
-      return        0;
-}
+let functions =
+  "\n\
+   int test1(int a, int b) {\n\
+  \    return a + b;\n\
+   }\n\n\
+   int test2(int a, char b) {\n\
+  \    return a;\n\
+   }\n\n\
+   char test3(int a, char b) {\n\
+  \    a = a * 2;\n\
+  \    a = a + 3;\n\
+  \    return b;\n\
+   }\n"
 
-//manual parse:
+let ifs =
+  " \n\
+  \  int main()\n\
+   {\n\
+  \    int x = 0;\n\
+  \    int y= 0;\n\
+  \    if(x > y) {\n\
+  \        x = x + 1;\n\
+  \    } else {\n\
+  \        y = y + 1;\n\
+  \    }\n\
+  \     if(x == 0) {\n\
+  \        x = y;\n\
+  \     }\n\n\
+  \     if(x == y) {\n\
+  \        x = x + y  ;   \n\
+  \    }\n\
+  \    return 0;\n\
+   }\n"
 
-// look for basic keywords;
-//             de limit based on semi colons
-// ask for input data types?
-//        ex: if user provides ocaml implementation for a file, we can map to it.
-// if start with type declaration
-//                  if start with variable name
-// if start with functionName (delimit further based on ()
-"
+let intTest = "\nint main() {\n  int a;\n  a = 2;\n\treturn 0;\n}"
+let main = "\nint main() {\n\treturn 0;\n}"
 
-let foofunction1 = "
-int foo(int a, int b) {
-  int x;
-  int y;
-  if (a < b) {
-    int z = 2;
-    x = b - a;
-    y = z + a;
-  } else {
-    int z = 3;
-    x = a - b;
-    y = z + b;
-  }
-  return x + y;
-}
+let statements =
+  "\n\
+   int main() {\n\
+  \    int x = 2;\n\
+  \    int y = 3;\n\
+  \    int z = 4;\n\
+  \    int a = x + y;\n\
+  \    int b = z - y;\n\
+  \    int c = z * y;\n\
+  \    int d = z / y;\n\
+  \    float e = 13;\n\n\
+  \    return 0;\n\n\
+   }\n"
 
-int main() {
-  int x = foo(foo(4, 6), 3);
-  return 0;
-}
-"
+let struct_test =
+  "\nstruct myStruct {\n  int a;\n  int b;\n  float c;\n  char d;\n};\n"
 
-let foofunction1_with_weird_spacing = "
-int foo(int a, int b) {
-  int x;
-        int y;
-  if (a < b) {
-    int z = 2;
-            x = b - a;
-    y = z + a;
-  } 
-else {
-         int z = 3;
-    x = a - b;
-        y = z + b;
-  }
-  return x + y;
-}
-
-int main() {
-  int x = foo(foo(4, 6), 3);
-  return 0;
-}
-"
-
-let foofunction2 = "
-int foo(int a, int b) {
-  int x = a;
-  int y = b;
-  return x + y;
-}
-
-int main() {
-  int x = foo(foo(4, 6), 3);
-  return 0;
-}
-"
-
-let functions = "
-int test1(int a, int b) {
-    return a + b;
-}
-
-int test2(int a, char b) {
-    return a;
-}
-
-char test3(int a, char b) {
-    a = a * 2;
-    a = a + 3;
-    return b;
-}
-"
-
-let ifs = " 
-  int main()
-{
-    int x = 0;
-    int y= 0;
-    if(x > y) {
-        x = x + 1;
-    } else {
-        y = y + 1;
-    }
-     if(x == 0) {
-        x = y;
-     }
-
-     if(x == y) {
-        x = x + y  ;   
-    }
-    return 0;
-}
-" 
-
-
-
-let intTest = "
-int main() {
-  int a;
-  a = 2;
-	return 0;
-}"
-
-let main = "
-int main() {
-	return 0;
-}"
-
-let statements = "
-int main() {
-    int x = 2;
-    int y = 3;
-    int z = 4;
-    int a = x + y;
-    int b = z - y;
-    int c = z * y;
-    int d = z / y;
-    float e = 13;
-
-    return 0;
-
-}
-"
-
-let struct_test = "
-struct myStruct {
-  int a;
-  int b;
-  float c;
-  char d;
-};
-"
-
-
-let struct2 = "
-struct myStructure {
-    int a;
-    int b;
-    char c;
-    float d;
-};
-int transformAB ( struct myStructure str) {
-    int c = str.a * str.b;
-    int b = str.a + str.b;
-    // int c = str.a * str.b;
-    return b + c;
-};
-
-int addAb ( struct myStructure str) {
-    return str.a + str.b;
-};
-
-int multAb ( struct myStructure str) {
-    return str.a * str.b;
-};
-
-int subAb ( struct myStructure str) {
-    return str.a - str.b;
-};
-
-int divideAb ( struct myStructure str) {
-    return str.a / str.b;
-};
-"
+let struct2 =
+  "\n\
+   struct myStructure {\n\
+  \    int a;\n\
+  \    int b;\n\
+  \    char c;\n\
+  \    float d;\n\
+   };\n\
+   int transformAB ( struct myStructure str) {\n\
+  \    int c = str.a * str.b;\n\
+  \    int b = str.a + str.b;\n\
+  \    // int c = str.a * str.b;\n\
+  \    return b + c;\n\
+   };\n\n\
+   int addAb ( struct myStructure str) {\n\
+  \    return str.a + str.b;\n\
+   };\n\n\
+   int multAb ( struct myStructure str) {\n\
+  \    return str.a * str.b;\n\
+   };\n\n\
+   int subAb ( struct myStructure str) {\n\
+  \    return str.a - str.b;\n\
+   };\n\n\
+   int divideAb ( struct myStructure str) {\n\
+  \    return str.a / str.b;\n\
+   };\n"
 
 (* do a string comparison of transpuled code and the expected transpiled code*)
 (* please see the tests/transpiled folder to see the equivalent code formmated automatically**)
 let test_transpiler _ =
-  assert_equal ("let () =\nlet x : int = 1  + 2 \n in\nexit(0 )\n") (parse comments);
+  assert_equal "let () =\nlet x : int = 1  + 2 \n in\nexit(0 )\n"
+    (parse comments);
 
-  assert_equal ("let foo (a : int) (b : int) : int = \nlet  (y,x)  = if a  < b \n then let z : int = 2  in\nlet x  = b  - a \n in\nlet y  = z  + a \n in\n (y,x) else let z : int = 3  in\nlet x  = a  - b \n in\nlet y  = z  + b \n in\n (y,x)  in\nx  + y \nlet () =\nlet x : int = (foo  (foo  4 6 )3 ) in\nexit(0 )\n") (parse foofunction1);
-  assert_equal ("let foo (a : int) (b : int) : int = \nlet x : int = a  in\nlet y : int = b  in\nx  + y \nlet () =\nlet x : int = (foo  (foo  4 6 )3 ) in\nexit(0 )\n"  ) (parse foofunction2);
-  assert_equal ("let test1 (a : int) (b : int) : int = \na  + b \nlet test2 (a : int) (b : char) : int = \na let test3 (a : int) (b : char) : char = \nlet a  = a  * 2 \n in\nlet a  = a  + 3 \n in\nb ") (parse functions);
-  assert_equal ("let () =\nlet x : int = 0  in\nlet y : int = 0  in\nlet  (y,x)  = if x  > y \n then let x  = x  + 1 \n in\n (y,x) else let y  = y  + 1 \n in\n (y,x)  in\nlet  (x)  = if x  = 0 \n then let x  = y  in\n (x)  in\nlet  (x)  = if x  = y \n then let x  = x  + y \n in\n (x)  in\nexit(0 )\n") (parse ifs);
+  assert_equal
+    "let foo (a : int) (b : int) : int = \n\
+     let  (y,x)  = if a  < b \n\
+    \ then let z : int = 2  in\n\
+     let x  = b  - a \n\
+    \ in\n\
+     let y  = z  + a \n\
+    \ in\n\
+    \ (y,x) else let z : int = 3  in\n\
+     let x  = a  - b \n\
+    \ in\n\
+     let y  = z  + b \n\
+    \ in\n\
+    \ (y,x)  in\n\
+     x  + y \n\
+     let () =\n\
+     let x : int = (foo  (foo  4 6 )3 ) in\n\
+     exit(0 )\n"
+    (parse foofunction1);
+  assert_equal
+    "let foo (a : int) (b : int) : int = \n\
+     let x : int = a  in\n\
+     let y : int = b  in\n\
+     x  + y \n\
+     let () =\n\
+     let x : int = (foo  (foo  4 6 )3 ) in\n\
+     exit(0 )\n"
+    (parse foofunction2);
+  assert_equal
+    "let test1 (a : int) (b : int) : int = \n\
+     a  + b \n\
+     let test2 (a : int) (b : char) : int = \n\
+     a let test3 (a : int) (b : char) : char = \n\
+     let a  = a  * 2 \n\
+    \ in\n\
+     let a  = a  + 3 \n\
+    \ in\n\
+     b "
+    (parse functions);
+  assert_equal
+    "let () =\n\
+     let x : int = 0  in\n\
+     let y : int = 0  in\n\
+     let  (y,x)  = if x  > y \n\
+    \ then let x  = x  + 1 \n\
+    \ in\n\
+    \ (y,x) else let y  = y  + 1 \n\
+    \ in\n\
+    \ (y,x)  in\n\
+     let  (x)  = if x  = 0 \n\
+    \ then let x  = y  in\n\
+    \ (x)  in\n\
+     let  (x)  = if x  = y \n\
+    \ then let x  = x  + y \n\
+    \ in\n\
+    \ (x)  in\n\
+     exit(0 )\n"
+    (parse ifs);
 
-  assert_equal ("let () =\nlet a  = 2  in\nexit(0 )\n") (parse intTest);
-  assert_equal ("let () =\nexit(0 )\n") (parse main);
-  assert_equal ("let () =\nlet x : int = 2  in\nlet y : int = 3  in\nlet z : int = 4  in\nlet a : int = x  + y \n in\nlet b : int = z  - y \n in\nlet c : int = z  * y \n in\nlet d : int = z  / y \n in\nlet e : float = 13  in\nexit(0 )\n") (parse statements);
-  assert_equal ("type myStruct = { a: int; b: int; c: float; d: char; } ") (parse struct_test);
+  assert_equal "let () =\nlet a  = 2  in\nexit(0 )\n" (parse intTest);
+  assert_equal "let () =\nexit(0 )\n" (parse main);
+  assert_equal
+    "let () =\n\
+     let x : int = 2  in\n\
+     let y : int = 3  in\n\
+     let z : int = 4  in\n\
+     let a : int = x  + y \n\
+    \ in\n\
+     let b : int = z  - y \n\
+    \ in\n\
+     let c : int = z  * y \n\
+    \ in\n\
+     let d : int = z  / y \n\
+    \ in\n\
+     let e : float = 13  in\n\
+     exit(0 )\n"
+    (parse statements);
+  assert_equal "type myStruct = { a: int; b: int; c: float; d: char; } "
+    (parse struct_test);
   (* get a weird output error to stdout on this test, but the transpiled file is still correct*)
-  assert_equal ("type myStructure = { a: int; b: int; c: char; d: float; } let transformAB (str : myStructure) : int = \nlet c : int = str.a  * str.b \n in\nlet b : int = str.a  + str.b \n in\nb  + c \nlet addAb (str : myStructure) : int = \nstr.a  + str.b \nlet multAb (str : myStructure) : int = \nstr.a  * str.b \nlet subAb (str : myStructure) : int = \nstr.a  - str.b \nlet divideAb (str : myStructure) : int = \nstr.a  / str.b \n") (parse struct2)
+  assert_equal
+    "type myStructure = { a: int; b: int; c: char; d: float; } let transformAB \
+     (str : myStructure) : int = \n\
+     let c : int = str.a  * str.b \n\
+    \ in\n\
+     let b : int = str.a  + str.b \n\
+    \ in\n\
+     b  + c \n\
+     let addAb (str : myStructure) : int = \n\
+     str.a  + str.b \n\
+     let multAb (str : myStructure) : int = \n\
+     str.a  * str.b \n\
+     let subAb (str : myStructure) : int = \n\
+     str.a  - str.b \n\
+     let divideAb (str : myStructure) : int = \n\
+     str.a  / str.b \n"
+    (parse struct2)
 
-
-  let test_white_space_makes_no_change _ =
-    assert_equal (parse comments_with_weird_spacing) (parse comments);
-    assert_equal (parse foofunction1_with_weird_spacing) (parse foofunction1)
-
-  
+let test_white_space_makes_no_change _ =
+  assert_equal (parse comments_with_weird_spacing) (parse comments);
+  assert_equal (parse foofunction1_with_weird_spacing) (parse foofunction1)
 
 let transpiler_tests =
   "test_transpiler"
   >::: [
-          "test_transpiler" >:: test_transpiler ;
-          "test_whitespace" >:: test_white_space_makes_no_change;
-        ]
-  
-let series =
-"Transpiler tests for string"
->::: [
-       transpiler_tests;
-      ]
+         "test_transpiler" >:: test_transpiler;
+         "test_whitespace" >:: test_white_space_makes_no_change;
+       ]
+
+let series = "Transpiler tests for string" >::: [ transpiler_tests ]
 let () = run_test_tt_main series
-        
