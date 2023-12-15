@@ -36,12 +36,12 @@ and visit_if_stmt (cond : Ast.expr) (then_branch : Ast.stmt)
   let return_str = " (" ^ String.concat ~sep:"," mutated ^ ") " in
   let else_str =
     match else_branch with
-    | Some e -> "else " ^ visit_stmt e func_name ^ return_str
-    | None -> ""
+    | Some e -> visit_stmt e func_name ^ return_str
+    | None -> return_str
   in
   "let " ^ return_str ^ " = if " ^ visit_expr cond ^ " then "
   ^ visit_stmt then_branch func_name
-  ^ return_str ^ else_str ^ " in\n"
+  ^ return_str ^ " else " ^ else_str ^ " in\n"
 
 and visit_function_decl (ast : Ast.function_decl) : string =
   match ast.name with
