@@ -18,6 +18,12 @@ let rec collect_from_stmt (stmt : Ast.stmt) (muts : string list)
           collect_from_decl decl m i)
         decl_list
   | Expr expr -> collect_from_expr expr muts inits
+  | If { then_branch; else_branch; _ } -> (
+      let muts_then, inits_then = collect_from_stmt then_branch muts inits in
+      match else_branch with
+      | Some e -> collect_from_stmt e muts_then inits_then
+      | None -> (muts_then, inits_then)
+  )
   | _ -> failwith "uhoh"
 
 and collect_from_decl (decl : Ast.decl) (muts : string list)
