@@ -20,7 +20,7 @@ let rec visit_stmt (ast : Ast.stmt) (func_name : string) : string =
       match func_name with
       | "main" -> "exit(" ^ visit_expr ret_expr ^ ")\n"
       | _ -> visit_expr ret_expr)
-  | Return None -> failwith "uhoh"
+  | Return None -> "()"
   | _ ->
       Clang.Printer.stmt Format.std_formatter ast;
       ""
@@ -49,8 +49,12 @@ and visit_function_decl (ast : Ast.function_decl) : string =
       "let () =\n"
       ^ visit_stmt (Option.value_exn ast.body) "main" (* TODO: FIX *)
   | IdentifierName name ->
-      "let " ^ name ^ " " ^ parse_func_params ast ^ ": "
-      ^ parse_func_return_type ast ^ " = \n"
+      let return_str =
+        match parse_func_return_type ast with
+        | "unit" -> "()"
+        | return_type -> " : " ^ return_type
+      in
+      "let " ^ name ^ " " ^ parse_func_params ast ^ return_str ^ " = \n"
       ^ visit_stmt (Option.value_exn ast.body) name
   | _ -> failwith "failure in visit_function_decl"
 
@@ -113,10 +117,13 @@ and visit_expr (ast : Ast.expr) : string =
   | IntegerLiteral i -> (
       match i with Int value -> Int.to_string value ^ " " | _ -> assert false)
   | Member s -> visit_struct_expr ast
-  | Call { callee; args } ->
-      "(" ^ visit_expr callee
-      ^ List.fold ~init:" " ~f:(fun s arg -> s ^ visit_expr arg) args
-      ^ ")"
+  | Call { callee; args } -> (
+      match List.length args with
+      | 0 -> visit_expr callee ^ "();"
+      | _ ->
+          "(" ^ visit_expr callee
+          ^ List.fold ~init:" " ~f:(fun s arg -> s ^ visit_expr arg) args
+          ^ ")")
   | _ ->
       Clang.Printer.expr Format.std_formatter ast;
       ""

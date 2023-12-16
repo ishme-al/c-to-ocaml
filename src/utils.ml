@@ -10,6 +10,7 @@ let parse_qual_type (q : Ast.qual_type) : string =
       | UChar -> "char"
       | Char_S -> "char"
       | Float -> "float"
+      | Void -> "unit"
       | _ -> failwith "handle others later")
   (* will refactor into two helpers later, but focused on functionality instead of digging through documentation to find appropriate record equivalent for now*)
   | Elaborated struct_type -> (
@@ -18,7 +19,7 @@ let parse_qual_type (q : Ast.qual_type) : string =
           match record with
           | Record record_object -> (
               match record_object.name with
-              | IdentifierName my_name -> my_name
+              | IdentifierName name -> name
               | _ -> failwith "handle others later")
           | _ -> failwith "handle others later"))
   | _ -> failwith "handle others later"
