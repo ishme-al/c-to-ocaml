@@ -24,22 +24,13 @@ let parse_qual_type (q : Ast.qual_type) : string =
           | _ -> failwith "handle others later"))
   | _ -> failwith "handle others later"
 
-let parse_func_params (ast : Ast.function_decl) : string =
-  let parse_param (acc : string) (p : Ast.parameter) =
-    acc ^ "(" ^ p.desc.name ^ " : " ^ parse_qual_type p.desc.qual_type ^ ") "
-  in
-  match ast.function_type.parameters with
-  | Some params when params.variadic ->
-      failwith "Variadic functions are not supported"
-  | Some params -> List.fold ~f:parse_param params.non_variadic ~init:""
-  | None -> ""
-
 let parse_func_return_type (ast : Ast.function_decl) : string =
   parse_qual_type ast.function_type.result
 
 (* TODO: how handle operations on types other than ints? *)
-let parse_binary_operator (op_kind : Ast.binary_operator_kind) : string =
-  match op_kind with
+let parse_binary_operator (op_kind : Ast.binary_operator_kind)
+    (var_type : string) : string =
+  let op = match op_kind with
   | Add -> "+"
   | Sub -> "-"
   | LT -> "<"
@@ -49,3 +40,15 @@ let parse_binary_operator (op_kind : Ast.binary_operator_kind) : string =
   | Mul -> "*"
   | Div -> "/"
   | _ -> failwith "handle others later"
+  in
+  var_type ^ ".( " ^ op ^ " )"
+
+let capitalize_first_letter str =
+  match String.length str with
+  | 0 -> str (* Empty string, nothing to capitalize *)
+  | _ ->
+      String.concat ~sep:""
+        [
+          String.capitalize (String.sub str ~pos:0 ~len:1);
+          String.sub str ~pos:1 ~len:(String.length str - 1);
+        ]
