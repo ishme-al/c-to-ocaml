@@ -33,15 +33,26 @@ and visit_if_stmt (cond : Ast.expr) (then_branch : Ast.stmt)
     | Some e -> Collect_vars.collect_mutated_vars e l
     | None -> l
   in
-  let return_str = " (" ^ String.concat ~sep:"," mutated ^ ") " in
-  let else_str =
-    match else_branch with
-    | Some e -> visit_stmt e func_name ^ return_str
-    | None -> return_str
-  in
-  "let " ^ return_str ^ " = if " ^ visit_expr cond ^ " then "
-  ^ visit_stmt then_branch func_name
-  ^ return_str ^ " else " ^ else_str ^ " in\n"
+  match List.length mutated with
+  | 0 -> (* TODO this might not work with some edge cases !!! *)
+      let else_str =
+        match else_branch with
+        | Some e -> visit_stmt e func_name
+        | None -> ""
+      in
+      "if " ^ visit_expr cond ^ " then "
+      ^ visit_stmt then_branch func_name
+      ^ " else " ^ else_str ^ "\n"
+  | _ ->
+      let return_str = " (" ^ String.concat ~sep:"," mutated ^ ") " in
+      let else_str =
+        match else_branch with
+        | Some e -> visit_stmt e func_name ^ return_str
+        | None -> return_str
+      in
+      "let " ^ return_str ^ " = if " ^ visit_expr cond ^ " then "
+      ^ visit_stmt then_branch func_name
+      ^ return_str ^ " else " ^ else_str ^ " in\n"
 
 and visit_function_decl (ast : Ast.function_decl) : string =
   match ast.name with
@@ -49,12 +60,16 @@ and visit_function_decl (ast : Ast.function_decl) : string =
       "let () =\n"
       ^ visit_stmt (Option.value_exn ast.body) "main" (* TODO: FIX *)
   | IdentifierName name ->
-      let return_str =
+      let let_str =
+        match Find_rec.find_rec_func name (Option.value_exn ast.body) with
+        | true -> "let rec "
+        | false -> "let "
+      and return_str =
         match parse_func_return_type ast with
         | "unit" -> "()"
         | return_type -> " : " ^ return_type
       in
-      "let " ^ name ^ " " ^ parse_func_params ast ^ return_str ^ " = \n"
+      let_str ^ name ^ " " ^ parse_func_params ast ^ return_str ^ " = \n"
       ^ visit_stmt (Option.value_exn ast.body) name
   | _ -> failwith "failure in visit_function_decl"
 

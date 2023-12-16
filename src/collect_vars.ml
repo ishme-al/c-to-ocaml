@@ -24,13 +24,14 @@ let rec collect_from_stmt (stmt : Ast.stmt) (muts : string list)
       | Some e -> collect_from_stmt e muts_then inits_then
       | None -> (muts_then, inits_then)
   )
-  | _ -> failwith "uhoh"
+  | Return _ -> ([], inits)
+  | _ -> failwith "uhoh in collect_from_stmt"
 
 and collect_from_decl (decl : Ast.decl) (muts : string list)
     (inits : string list) : string list * string list =
   match decl.desc with
   | Var var_decl -> (muts, var_decl.var_name :: inits)
-  | _ -> failwith "uhoh"
+  | _ -> failwith "uhoh in collect_from_decl"
 
 and collect_from_expr (expr : Ast.expr) (muts : string list)
     (inits : string list) : string list * string list =
@@ -48,7 +49,9 @@ and collect_from_expr (expr : Ast.expr) (muts : string list)
         || List.mem muts name ~equal:String.equal
       then (muts, inits)
       else (name :: muts, inits)
-  | _ -> failwith "uhoh"
+  | Call _ -> (muts, inits)
+  | IntegerLiteral _ -> (muts, inits)
+  | _ -> failwith "uhoh in collect_from_expr"
 
 let collect_mutated_vars (stmt : Ast.stmt) (muts_init : string list) :
     string list =

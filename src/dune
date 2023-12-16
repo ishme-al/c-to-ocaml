@@ -6,6 +6,13 @@
   (pps bisect_ppx)))
 
 (library
+ (name find_rec)
+ (modules find_rec)
+ (libraries core clangml)
+ (preprocess
+  (pps bisect_ppx)))
+
+(library
  (name collect_vars)
  (modules collect_vars)
  (libraries core clangml)
@@ -15,7 +22,7 @@
 (library
  (name lib)
  (modules lib)
- (libraries core clangml collect_vars utils)
+ (libraries core clangml collect_vars find_rec utils)
  (preprocess
   (pps bisect_ppx)))
 
