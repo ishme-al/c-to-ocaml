@@ -4,6 +4,23 @@ open Core
 
 [@@@ocaml.warning "-26"]
 
+let get_decl_names (ast : Ast.decl) : string =
+  match ast.desc with
+  | Function function_decl -> (
+      match function_decl.name with
+      | IdentifierName name -> name
+      | _ -> assert false)
+  | Var var_decl -> var_decl.var_name
+  | RecordDecl struct_decl -> struct_decl.name
+  (* | Field { name; qual_type; _ } ->
+      Scope.add_string
+        (name ^ ": " ^ parse_qual_type qual_type ^ "; ")
+        ("", vars, types) *)
+  | EmptyDecl -> ""
+  | _ ->
+      Clang.Printer.decl Format.std_formatter ast;
+      ""
+
 let rec collect_from_stmt (stmt : Ast.stmt) (muts : string list)
     (inits : string list) : string list * string list =
   match stmt.desc with
