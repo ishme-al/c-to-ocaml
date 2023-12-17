@@ -6,51 +6,67 @@ open Scope
 [@@@ocaml.warning "-26"]
 [@@@ocaml.warning "-27"]
 
+let visit_struct_field (ast : Ast.decl) (struct_name : string)
+    (vars : string VarMap.t) (types : (string * string) list VarMap.t) : Scope.t
+    =
+  match ast.desc with
+  | Field { name; qual_type; _ } ->
+      ("", vars, types)
+      |> Scope.add_type struct_name (name, parse_qual_type qual_type)
+      |>  Scope.add_string
+           (name ^ ": " ^ parse_qual_type qual_type ^ "; ")
+  | _ -> assert false
+
 let rec visit_stmt (ast : Ast.stmt) (func_name : string)
-    (vars : string VarMap.t) : Scope.t =
+    (vars : string VarMap.t) (types : (string * string) list VarMap.t) : Scope.t
+    =
   match ast.desc with
   | Compound stmt_list ->
-      List.fold ~init:("", vars)
+      List.fold ~init:("", vars, types)
         ~f:(fun s stmt ->
-          Scope.aggregate s @@ visit_stmt stmt func_name @@ Scope.get_vars s)
+          Scope.aggregate s
+          @@ visit_stmt stmt func_name (Scope.get_vars s) (Scope.get_types s))
         stmt_list
   | Decl decl_list ->
-      List.fold ~init:("", vars)
+      List.fold ~init:("", vars, types)
         ~f:(fun s decl ->
-          Scope.aggregate s @@ visit_decl decl @@ Scope.get_vars s)
+          Scope.aggregate s
+          @@ visit_decl decl (Scope.get_vars s) (Scope.get_types s))
         decl_list
-  | Expr expr -> visit_expr expr vars
+  | Expr expr -> visit_expr expr vars types
   | If { cond; then_branch; else_branch; _ } ->
-      visit_if_stmt cond then_branch else_branch func_name vars
+      visit_if_stmt cond then_branch else_branch func_name vars types
   | Return (Some ret_expr) -> (
       match func_name with
       | "main" ->
-          ("", vars) |> Scope.add_string "exit("
+          ("", vars, types) |> Scope.add_string "exit("
           |> Scope.extend ~f:(visit_expr ret_expr)
           |> Scope.add_string ")\n"
-      | _ -> ("", vars) |> Scope.extend ~f:(visit_expr ret_expr))
-  | Return None -> ("", vars) |> Scope.add_string "()"
+      | _ -> ("", vars, types) |> Scope.extend ~f:(visit_expr ret_expr))
+  | Return None -> ("", vars, types) |> Scope.add_string "()"
   | _ ->
       Clang.Printer.stmt Format.std_formatter ast;
-      ("", vars)
+      ("", vars, types)
 
 and visit_if_stmt (cond : Ast.expr) (then_branch : Ast.stmt)
     (else_branch : Ast.stmt option) (func_name : string)
-    (vars : string VarMap.t) : Scope.t =
+    (vars : string VarMap.t) (types : (string * string) list VarMap.t) : Scope.t
+    =
   let mutated =
     Collect_vars.collect_mutated_vars then_branch [] |> fun l ->
     match else_branch with
     | Some e -> Collect_vars.collect_mutated_vars e l
     | None -> l
-  and else_str (vars : string VarMap.t) =
+  and else_str (vars : string VarMap.t)
+      (types : (string * string) list VarMap.t) =
     match else_branch with
-    | Some e -> visit_stmt e func_name vars
-    | None -> ("", vars)
+    | Some e -> visit_stmt e func_name vars types
+    | None -> ("", vars, types)
   in
   match List.length mutated with
   | 0 ->
       (* TODO this might not work with some edge cases !!! *)
-      ("", vars) |> Scope.add_string "if "
+      ("", vars, types) |> Scope.add_string "if "
       |> Scope.extend ~f:(visit_expr cond)
       |> Scope.add_string " then "
       |> Scope.extend ~f:(visit_stmt then_branch func_name)
@@ -58,7 +74,7 @@ and visit_if_stmt (cond : Ast.expr) (then_branch : Ast.stmt)
       |> Scope.add_string "\n"
   | _ ->
       let return_str = " (" ^ String.concat ~sep:"," mutated ^ ") " in
-      ("", vars)
+      ("", vars, types)
       |> Scope.add_string @@ "let " ^ return_str ^ " = if "
       |> Scope.extend ~f:(visit_expr cond)
       |> Scope.add_string " then "
@@ -68,10 +84,10 @@ and visit_if_stmt (cond : Ast.expr) (then_branch : Ast.stmt)
       |> Scope.add_string @@ return_str ^ " in\n"
 
 and visit_function_decl (ast : Ast.function_decl) (vars : string VarMap.t)
-    : Scope.t =
+    (types : (string * string) list VarMap.t) : Scope.t =
   match ast.name with
   | IdentifierName "main" ->
-      ("", vars)
+      ("", vars, types)
       |> Scope.add_string "let () =\n"
       |> Scope.extend ~f:(visit_stmt (Option.value_exn ast.body) "main")
   | IdentifierName name ->
@@ -84,47 +100,50 @@ and visit_function_decl (ast : Ast.function_decl) (vars : string VarMap.t)
         | "unit" -> "()"
         | return_type -> " : " ^ return_type
       in
-      ("", vars)
+      ("", vars, types)
       |> Scope.add_string (let_str ^ name ^ " ")
       |> Scope.extend ~f:(parse_func_params ast)
       |> Scope.add_string (return_str ^ " = \n")
       |> Scope.extend ~f:(visit_stmt (Option.value_exn ast.body) name)
   | _ -> failwith "failure in visit_function_decl"
 
-and visit_struct_decl (ast : Ast.record_decl) : string =
-  let name = ast.name in
-  "type " ^ name ^ " = { "
-  ^ (Scope.get_string
-    @@ List.fold ~init:Scope.empty
+and visit_struct_decl (ast : Ast.record_decl) (vars : string VarMap.t)
+    (types : (string * string) list VarMap.t) : Scope.t =
+  ("", vars, types)
+  |> Scope.add_string @@ "type " ^ ast.name ^ " = { "
+  |> (fun s ->
+       List.fold ~init:s
          ~f:(fun s item ->
-           Scope.aggregate s @@ visit_decl item VarMap.empty)
+           Scope.aggregate s
+           @@ visit_struct_field item ast.name (Scope.get_vars s)
+                (Scope.get_types s))
          ast.fields)
-  ^ "} "
+  |> Scope.add_string " }"
 
-and visit_decl (ast : Ast.decl) (vars : string VarMap.t) : Scope.t =
+and visit_decl (ast : Ast.decl) (vars : string VarMap.t)
+    (types : (string * string) list VarMap.t) : Scope.t =
   match ast.desc with
-  | Function function_decl -> visit_function_decl function_decl vars
+  | Function function_decl -> visit_function_decl function_decl vars types
   | Var var_decl -> (
       let var_type = parse_qual_type var_decl.var_type in
       match var_decl.var_init with
       | Some var_init ->
-          ("", vars)
+          ("", vars, types)
           |> Scope.add_var var_decl.var_name var_type
           |> Scope.add_string @@ "let " ^ var_decl.var_name ^ " : " ^ var_type
              ^ " = "
           |> Scope.extend ~f:(visit_expr var_init)
           |> Scope.add_string " in\n"
-      | None -> ("", vars) |> Scope.add_var var_decl.var_name var_type)
-  | RecordDecl struct_decl ->
-      Scope.add_string (visit_struct_decl struct_decl) ("", vars)
-  | Field { name; qual_type; _ } ->
+      | None -> ("", vars, types) |> Scope.add_var var_decl.var_name var_type)
+  | RecordDecl struct_decl -> visit_struct_decl struct_decl vars types
+  (* | Field { name; qual_type; _ } ->
       Scope.add_string
         (name ^ ": " ^ parse_qual_type qual_type ^ "; ")
-        ("", vars)
-  | EmptyDecl -> ("", vars)
+        ("", vars, types) *)
+  | EmptyDecl -> ("", vars, types)
   | _ ->
       Clang.Printer.decl Format.std_formatter ast;
-      ("", vars)
+      ("", vars, types)
 
 and visit_struct_expr (ast : Ast.expr) : string =
   match ast.desc with
@@ -148,68 +167,73 @@ and visit_struct_expr (ast : Ast.expr) : string =
       name ^ "." ^ fieldName ^ " "
   | _ -> failwith "handle other cases later"
 
-and visit_expr (ast : Ast.expr) (vars : string VarMap.t) : Scope.t =
+and visit_expr (ast : Ast.expr) (vars : string VarMap.t)
+    (types : (string * string) list VarMap.t) : Scope.t =
   match ast.desc with
   | BinaryOperator { lhs; rhs; kind } -> (
       let op_type =
-        visit_expr lhs vars |> Scope.get_string |> String.strip
+        visit_expr lhs vars types |> Scope.get_string |> String.strip
         |> Scope.get_var vars |> capitalize_first_letter
       in
       match kind with
       | Assign ->
-          ("", vars) |> Scope.add_string "let "
+          ("", vars, types) |> Scope.add_string "let "
           |> Scope.extend ~f:(visit_expr lhs)
           |> Scope.add_string " = "
           |> Scope.extend ~f:(visit_expr rhs)
           |> Scope.add_string " in\n"
       | _ ->
-          ("", vars)
+          ("", vars, types)
           |> Scope.add_string (parse_binary_operator kind op_type ^ " ")
           |> Scope.extend ~f:(visit_expr lhs)
           |> Scope.extend ~f:(visit_expr rhs))
   | DeclRef d -> (
       match d.name with
-      | IdentifierName name -> ("", vars) |> Scope.add_string (name ^ " ")
+      | IdentifierName name -> ("", vars, types) |> Scope.add_string (name ^ " ")
       | _ -> assert false)
   | IntegerLiteral i -> (
       match i with
-      | Int value -> ("", vars) |> Scope.add_string (Int.to_string value ^ " ")
+      | Int value ->
+          ("", vars, types) |> Scope.add_string (Int.to_string value ^ " ")
       | _ -> assert false)
   | FloatingLiteral f -> (
       match f with
       | Float value ->
           let float_str = Float.to_string value in
-          printf "float_str: %s\n" float_str; (* THIS DOESNT WORK *)
-          ("", vars)
+          printf "float_str: %s\n" float_str;
+          (* THIS DOESNT WORK *)
+          ("", vars, types)
           |> Scope.add_string
                (float_str
                ^ (if String.contains float_str '.' then "" else ".")
                ^ " ")
       | _ -> assert false)
-  | Member s -> ("", vars) |> Scope.add_string @@ visit_struct_expr ast
+  | Member s -> ("", vars, types) |> Scope.add_string @@ visit_struct_expr ast
   | Call { callee; args } -> (
       match List.length args with
       | 0 ->
-          ("", vars)
+          ("", vars, types)
           |> Scope.extend ~f:(visit_expr callee)
           |> Scope.add_string "();"
       | _ ->
-          ("", vars) |> Scope.add_string "("
+          ("", vars, types) |> Scope.add_string "("
           |> Scope.extend ~f:(visit_expr callee)
           |> (fun s ->
                List.fold ~init:s
                  ~f:(fun s arg ->
-                   Scope.aggregate s @@ visit_expr arg @@ Scope.get_vars s)
+                   Scope.aggregate s
+                   @@ visit_expr arg (Scope.get_vars s) (Scope.get_types s))
                  args)
           |> Scope.add_string ")")
   | _ ->
       Clang.Printer.expr Format.std_formatter ast;
-      ("", vars)
+      ("", vars, types)
 
 let parse (source : string) : string =
   let ast = Clang.Ast.parse_string source in
   Scope.get_string
     (List.fold ~init:Scope.empty
        ~f:(fun s item ->
-         Scope.aggregate s @@ visit_decl item @@ Scope.get_vars s)
+         Scope.aggregate s
+         @@ visit_decl item (Scope.get_vars s) (Scope.get_types s))
        ast.desc.items)

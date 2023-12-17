@@ -1,19 +1,19 @@
-int foo(int a, int b) {
-  int x;
-  int y;
+float foo(float a, float b) {
+  float x;
+  float y;
   if (a < b) {
-    int z = 2;
+    float z = 2;
     x = b - a;
     y = z + a;
   } else {
-    int z = 3;
+    float z = 3;
     x = a - b;
     y = z + b;
   }
   return x + y;
 }
 
-int main() {
-  int x = foo(foo(4, 6), 3);
+float main() {
+  float x = foo(foo(4, 6), 3);
   return 0;
 }

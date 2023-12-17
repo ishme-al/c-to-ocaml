@@ -2,6 +2,8 @@ open Clang
 open Core
 open Scope
 
+[@@@warning "-27"]
+
 (* returns the OCaml equivalent type of a qual_type *)
 let parse_qual_type (q : Ast.qual_type) : string =
   match q.desc with
@@ -21,39 +23,49 @@ let parse_qual_type (q : Ast.qual_type) : string =
           | Record record_object -> (
               match record_object.name with
               | IdentifierName name -> name
-              | _ -> failwith "handle others later")
+              | _ -> assert false)
           | _ -> failwith "handle others later"))
   | _ -> failwith "handle others later"
 
-let parse_func_params (ast : Ast.function_decl) (vars : string VarMap.t) :
-  Scope.t =
-let parse_param (acc : Scope.t) (p : Ast.parameter) : Scope.t =
-  let qual_type = parse_qual_type p.desc.qual_type in
-  acc
-  |> Scope.add_var p.desc.name qual_type
-  |> Scope.add_string ("(" ^ p.desc.name ^ " : " ^ qual_type ^ ") ")
-in
-match ast.function_type.parameters with
-| Some params when params.variadic ->
-    failwith "Variadic functions are not supported"
-| Some params -> List.fold ~f:parse_param params.non_variadic ~init:("", vars)
-| None -> ("", vars)
+let parse_func_params (ast : Ast.function_decl) (vars : string VarMap.t)
+    (types : (string * string) list VarMap.t) : Scope.t =
+  let parse_param (acc : Scope.t) (p : Ast.parameter) : Scope.t =
+    let qual_type = parse_qual_type p.desc.qual_type in
+    match Scope.get_type types qual_type with
+    | None ->
+        acc
+        |> Scope.add_var p.desc.name qual_type
+        |> Scope.add_string ("(" ^ p.desc.name ^ " : " ^ qual_type ^ ") ")
+    | Some list ->
+        List.fold
+          ~f:(fun acc (var, typ) ->
+            Scope.add_var (p.desc.name ^ "." ^ var) typ acc)
+          ~init:acc list
+        |> Scope.add_string ("(" ^ p.desc.name ^ " : " ^ qual_type ^ ") ")
+  in
+  match ast.function_type.parameters with
+  | Some params when params.variadic ->
+      failwith "Variadic functions are not supported"
+  | Some params ->
+      List.fold ~f:parse_param params.non_variadic ~init:("", vars, types)
+  | None -> ("", vars, types)
 
 let parse_func_return_type (ast : Ast.function_decl) : string =
   parse_qual_type ast.function_type.result
 
 let parse_binary_operator (op_kind : Ast.binary_operator_kind)
     (var_type : string) : string =
-  let op = match op_kind with
-  | Add -> "+"
-  | Sub -> "-"
-  | LT -> "<"
-  | GT -> ">"
-  | EQ -> "="
-  | Assign -> "="
-  | Mul -> "*"
-  | Div -> "/"
-  | _ -> failwith "handle others later"
+  let op =
+    match op_kind with
+    | Add -> "+"
+    | Sub -> "-"
+    | LT -> "<"
+    | GT -> ">"
+    | EQ -> "="
+    | Assign -> "="
+    | Mul -> "*"
+    | Div -> "/"
+    | _ -> failwith "handle others later"
   in
   var_type ^ ".( " ^ op ^ " )"
 
