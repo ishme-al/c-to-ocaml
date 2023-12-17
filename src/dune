@@ -1,4 +1,9 @@
 (library
+ (name scope)
+ (modules scope)
+ (libraries core))
+
+(library
  (name utils)
  (modules utils)
  (libraries core clangml)
@@ -22,7 +27,7 @@
 (library
  (name lib)
  (modules lib)
- (libraries core clangml collect_vars find_rec utils)
+ (libraries core clangml collect_vars find_rec utils scope)
  (preprocess
   (pps bisect_ppx)))
 

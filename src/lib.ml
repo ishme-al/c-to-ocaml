@@ -1,49 +1,12 @@
 open Core
 open Clang
 open Utils
+open Scope
 
 [@@@ocaml.warning "-26"]
 [@@@ocaml.warning "-27"]
-[@@@ocaml.warning "-32"]
 
-module Scope = struct
-  module VarMap = Map.Make (String)
-
-  type t = string * string VarMap.t
-
-  let empty : t = ("", VarMap.empty)
-  let create (str : string) (map : string VarMap.t) : t = (str, map)
-
-  let aggregate (scope1 : t) (scope2 : t) : t =
-    let str, _ = scope1 in
-    let str', map' = scope2 in
-    (str ^ str', map')
-
-  let add_string (s : string) (scope : t) : t =
-    let str, map = scope in
-    (str ^ s, map)
-
-  let add_var (name : string) (s : string) (scope : t) : t =
-    let str, map = scope in
-    let map' = Map.update map name ~f:(fun _ -> s) in
-    (str, map')
-
-  let get_string (scope : t) : string =
-    let str, _ = scope in
-    str
-
-  let get_vars (scope : t) : string VarMap.t =
-    let _, map = scope in
-    map
-
-  let get_var (map : string VarMap.t) (name : string) : string =
-    Map.find_exn map name
-
-  let extend ~(f : string VarMap.t -> t) (scope : t) : t =
-    f @@ get_vars scope |> aggregate scope
-end
-
-let parse_func_params (ast : Ast.function_decl) (vars : string Scope.VarMap.t) :
+let parse_func_params (ast : Ast.function_decl) (vars : string VarMap.t) :
     Scope.t =
   let parse_param (acc : Scope.t) (p : Ast.parameter) : Scope.t =
     let qual_type = parse_qual_type p.desc.qual_type in
@@ -58,7 +21,7 @@ let parse_func_params (ast : Ast.function_decl) (vars : string Scope.VarMap.t) :
   | None -> ("", vars)
 
 let rec visit_stmt (ast : Ast.stmt) (func_name : string)
-    (vars : string Scope.VarMap.t) : Scope.t =
+    (vars : string VarMap.t) : Scope.t =
   match ast.desc with
   | Compound stmt_list ->
       List.fold ~init:("", vars)
@@ -87,13 +50,13 @@ let rec visit_stmt (ast : Ast.stmt) (func_name : string)
 
 and visit_if_stmt (cond : Ast.expr) (then_branch : Ast.stmt)
     (else_branch : Ast.stmt option) (func_name : string)
-    (vars : string Scope.VarMap.t) : Scope.t =
+    (vars : string VarMap.t) : Scope.t =
   let mutated =
     Collect_vars.collect_mutated_vars then_branch [] |> fun l ->
     match else_branch with
     | Some e -> Collect_vars.collect_mutated_vars e l
     | None -> l
-  and else_str (vars : string Scope.VarMap.t) =
+  and else_str (vars : string VarMap.t) =
     match else_branch with
     | Some e -> visit_stmt e func_name vars
     | None -> ("", vars)
@@ -118,7 +81,7 @@ and visit_if_stmt (cond : Ast.expr) (then_branch : Ast.stmt)
       |> Scope.extend ~f:else_str
       |> Scope.add_string @@ return_str ^ " in\n"
 
-and visit_function_decl (ast : Ast.function_decl) (vars : string Scope.VarMap.t)
+and visit_function_decl (ast : Ast.function_decl) (vars : string VarMap.t)
     : Scope.t =
   match ast.name with
   | IdentifierName "main" ->
@@ -148,11 +111,11 @@ and visit_struct_decl (ast : Ast.record_decl) : string =
   ^ (Scope.get_string
     @@ List.fold ~init:Scope.empty
          ~f:(fun s item ->
-           Scope.aggregate s @@ visit_decl item Scope.VarMap.empty)
+           Scope.aggregate s @@ visit_decl item VarMap.empty)
          ast.fields)
   ^ "} "
 
-and visit_decl (ast : Ast.decl) (vars : string Scope.VarMap.t) : Scope.t =
+and visit_decl (ast : Ast.decl) (vars : string VarMap.t) : Scope.t =
   match ast.desc with
   | Function function_decl -> visit_function_decl function_decl vars
   | Var var_decl -> (
@@ -199,7 +162,7 @@ and visit_struct_expr (ast : Ast.expr) : string =
       name ^ "." ^ fieldName ^ " "
   | _ -> failwith "handle other cases later"
 
-and visit_expr (ast : Ast.expr) (vars : string Scope.VarMap.t) : Scope.t =
+and visit_expr (ast : Ast.expr) (vars : string VarMap.t) : Scope.t =
   match ast.desc with
   | BinaryOperator { lhs; rhs; kind } -> (
       let op_type =
