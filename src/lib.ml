@@ -182,7 +182,8 @@ and visit_decl (ast : Ast.decl) (vars : string VarMap.t)
           |> Scope.add_var var_decl.var_name var_type
           |> Scope.add_string @@ "let " ^ var_decl.var_name ^ " : " ^ var_type
              ^ " = "
-          |> Scope.extend ~f:(visit_var_init var_init var_type)
+          |> Scope.extend
+               ~f:(visit_var_init var_init var_decl.var_name var_type)
           |> Scope.add_string " in\n"
       | None -> ("", vars, types) |> Scope.add_var var_decl.var_name var_type)
   | RecordDecl struct_decl -> visit_struct_decl struct_decl vars types
@@ -191,12 +192,24 @@ and visit_decl (ast : Ast.decl) (vars : string VarMap.t)
       Clang.Printer.decl Format.std_formatter ast;
       ("", vars, types)
 
-and visit_var_init (ast : Ast.expr) (var_type : string) (vars : string VarMap.t)
-    (types : (string * string) list VarMap.t) : Scope.t =
+and visit_var_init (ast : Ast.expr) (var_name : string) (var_type : string)
+    (vars : string VarMap.t) (types : (string * string) list VarMap.t) : Scope.t
+    =
   match ast.desc with
   | InitList expr_list -> (
       match Scope.get_type types var_type with
-      | Some _ -> failwith "handle struct init later"
+      | Some struct_types ->
+          ("", vars, types) |> Scope.add_string "{ "
+          |> (fun s ->
+               List.fold ~init:s ~f:(fun s item ->
+                   let expr, (item_name, item_type) = item in
+                   s
+                   |> Scope.add_var (var_name ^ "." ^ item_name) item_type
+                   |> Scope.add_string @@ item_name ^ " = "
+                   |> Scope.extend ~f:(visit_expr expr)
+                   |> Scope.add_string "; ")
+               @@ List.zip_exn expr_list (List.rev struct_types))
+          |> Scope.add_string " }"
       | None -> (
           match List.length expr_list with
           | 0 -> ("[]", vars, types)
@@ -263,6 +276,9 @@ and visit_expr (ast : Ast.expr) (vars : string VarMap.t)
                ^ (if String.contains float_str '.' then "" else ".")
                ^ " ")
       | _ -> assert false)
+  | CharacterLiteral { value; _ } ->
+      ("", vars, types)
+      |> Scope.add_string ("'" ^ (String.of_char @@ Char.of_int_exn value) ^ "' ")
   | Member s -> ("", vars, types) |> Scope.add_string @@ parse_struct_expr ast
   | Call { callee; args } -> (
       match List.length args with
