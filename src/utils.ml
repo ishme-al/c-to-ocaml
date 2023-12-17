@@ -15,7 +15,7 @@ let capitalize_first_letter str =
         ]
 
 (* returns the OCaml equivalent type of a qual_type *)
-let parse_qual_type (q : Ast.qual_type) : string =
+let rec parse_qual_type (q : Ast.qual_type) : string =
   match q.desc with
   | BuiltinType builtintype -> (
       match builtintype with
@@ -35,6 +35,7 @@ let parse_qual_type (q : Ast.qual_type) : string =
               | IdentifierName name -> name
               | _ -> assert false)
           | _ -> failwith "handle others later"))
+  | ConstantArray { element; _ } -> parse_qual_type element ^ " list"
   | _ -> failwith "handle others later"
 
 let parse_func_params (ast : Ast.function_decl) (vars : string VarMap.t)

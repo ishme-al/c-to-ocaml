@@ -182,7 +182,7 @@ and visit_decl (ast : Ast.decl) (vars : string VarMap.t)
           |> Scope.add_var var_decl.var_name var_type
           |> Scope.add_string @@ "let " ^ var_decl.var_name ^ " : " ^ var_type
              ^ " = "
-          |> Scope.extend ~f:(visit_expr var_init)
+          |> Scope.extend ~f:(visit_var_init var_init var_type)
           |> Scope.add_string " in\n"
       | None -> ("", vars, types) |> Scope.add_var var_decl.var_name var_type)
   | RecordDecl struct_decl -> visit_struct_decl struct_decl vars types
@@ -190,6 +190,27 @@ and visit_decl (ast : Ast.decl) (vars : string VarMap.t)
   | _ ->
       Clang.Printer.decl Format.std_formatter ast;
       ("", vars, types)
+
+and visit_var_init (ast : Ast.expr) (var_type : string) (vars : string VarMap.t)
+    (types : (string * string) list VarMap.t) : Scope.t =
+  match ast.desc with
+  | InitList expr_list -> (
+      match Scope.get_type types var_type with
+      | Some _ -> failwith "handle struct init later"
+      | None -> (
+          match List.length expr_list with
+          | 0 -> ("[]", vars, types)
+          | _ ->
+              ("", vars, types) |> Scope.add_string "["
+              |> (fun s ->
+                   List.fold ~init:s
+                     ~f:(fun s item ->
+                       Scope.aggregate s
+                       @@ visit_expr item (Scope.get_vars s) (Scope.get_types s)
+                       |> Scope.add_string "; ")
+                     expr_list)
+              |> Scope.add_string "]"))
+  | _ -> visit_expr ast vars types
 
 and visit_expr (ast : Ast.expr) (vars : string VarMap.t)
     (types : (string * string) list VarMap.t) : Scope.t =
@@ -236,8 +257,6 @@ and visit_expr (ast : Ast.expr) (vars : string VarMap.t)
       match f with
       | Float value ->
           let float_str = Float.to_string value in
-          printf "float_str: %s\n" float_str;
-          (* THIS DOESNT WORK *)
           ("", vars, types)
           |> Scope.add_string
                (float_str
