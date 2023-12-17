@@ -1,5 +1,6 @@
 open Clang
 open Core
+open Scope
 
 (* returns the OCaml equivalent type of a qual_type *)
 let parse_qual_type (q : Ast.qual_type) : string =
@@ -24,10 +25,23 @@ let parse_qual_type (q : Ast.qual_type) : string =
           | _ -> failwith "handle others later"))
   | _ -> failwith "handle others later"
 
+let parse_func_params (ast : Ast.function_decl) (vars : string VarMap.t) :
+  Scope.t =
+let parse_param (acc : Scope.t) (p : Ast.parameter) : Scope.t =
+  let qual_type = parse_qual_type p.desc.qual_type in
+  acc
+  |> Scope.add_var p.desc.name qual_type
+  |> Scope.add_string ("(" ^ p.desc.name ^ " : " ^ qual_type ^ ") ")
+in
+match ast.function_type.parameters with
+| Some params when params.variadic ->
+    failwith "Variadic functions are not supported"
+| Some params -> List.fold ~f:parse_param params.non_variadic ~init:("", vars)
+| None -> ("", vars)
+
 let parse_func_return_type (ast : Ast.function_decl) : string =
   parse_qual_type ast.function_type.result
 
-(* TODO: how handle operations on types other than ints? *)
 let parse_binary_operator (op_kind : Ast.binary_operator_kind)
     (var_type : string) : string =
   let op = match op_kind with

@@ -6,20 +6,6 @@ open Scope
 [@@@ocaml.warning "-26"]
 [@@@ocaml.warning "-27"]
 
-let parse_func_params (ast : Ast.function_decl) (vars : string VarMap.t) :
-    Scope.t =
-  let parse_param (acc : Scope.t) (p : Ast.parameter) : Scope.t =
-    let qual_type = parse_qual_type p.desc.qual_type in
-    acc
-    |> Scope.add_var p.desc.name qual_type
-    |> Scope.add_string ("(" ^ p.desc.name ^ " : " ^ qual_type ^ ") ")
-  in
-  match ast.function_type.parameters with
-  | Some params when params.variadic ->
-      failwith "Variadic functions are not supported"
-  | Some params -> List.fold ~f:parse_param params.non_variadic ~init:("", vars)
-  | None -> ("", vars)
-
 let rec visit_stmt (ast : Ast.stmt) (func_name : string)
     (vars : string VarMap.t) : Scope.t =
   match ast.desc with

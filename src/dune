@@ -6,7 +6,7 @@
 (library
  (name utils)
  (modules utils)
- (libraries core clangml)
+ (libraries core clangml scope)
  (preprocess
   (pps bisect_ppx)))
 
