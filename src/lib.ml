@@ -6,17 +6,6 @@ open Scope
 [@@@ocaml.warning "-26"]
 [@@@ocaml.warning "-27"]
 
-let visit_struct_field (ast : Ast.decl) (struct_name : string)
-    (vars : string VarMap.t) (types : (string * string) list VarMap.t) : Scope.t
-    =
-  match ast.desc with
-  | Field { name; qual_type; _ } ->
-      ("", vars, types)
-      |> Scope.add_type struct_name (name, parse_qual_type qual_type)
-      |>  Scope.add_string
-           (name ^ ": " ^ parse_qual_type qual_type ^ "; ")
-  | _ -> assert false
-
 let rec visit_stmt (ast : Ast.stmt) (func_name : string)
     (vars : string VarMap.t) (types : (string * string) list VarMap.t) : Scope.t
     =
@@ -115,7 +104,7 @@ and visit_struct_decl (ast : Ast.record_decl) (vars : string VarMap.t)
        List.fold ~init:s
          ~f:(fun s item ->
            Scope.aggregate s
-           @@ visit_struct_field item ast.name (Scope.get_vars s)
+           @@ parse_struct_field item ast.name (Scope.get_vars s)
                 (Scope.get_types s))
          ast.fields)
   |> Scope.add_string " }"
@@ -145,35 +134,11 @@ and visit_decl (ast : Ast.decl) (vars : string VarMap.t)
       Clang.Printer.decl Format.std_formatter ast;
       ("", vars, types)
 
-and visit_struct_expr (ast : Ast.expr) : string =
-  match ast.desc with
-  | Member s ->
-      let tempStruct = Option.value_exn s.base in
-      let name =
-        match tempStruct.desc with
-        | DeclRef d -> (
-            match d.name with IdentifierName name -> name | _ -> assert false)
-        | _ -> failwith "handle other cases later"
-      in
-      let field = s.field in
-      let fieldName =
-        match field with
-        | FieldName f -> (
-            match f.desc.name with
-            | IdentifierName i -> i
-            | _ -> failwith "handle edge case later")
-        | _ -> failwith "handle other cases later"
-      in
-      name ^ "." ^ fieldName ^ " "
-  | _ -> failwith "handle other cases later"
-
 and visit_expr (ast : Ast.expr) (vars : string VarMap.t)
     (types : (string * string) list VarMap.t) : Scope.t =
   match ast.desc with
   | BinaryOperator { lhs; rhs; kind } -> (
-      let op_type =
-        visit_expr lhs vars types |> Scope.get_string |> String.strip
-        |> Scope.get_var vars |> capitalize_first_letter
+      let op_type = parse_op_type lhs vars
       in
       match kind with
       | Assign ->
@@ -208,7 +173,7 @@ and visit_expr (ast : Ast.expr) (vars : string VarMap.t)
                ^ (if String.contains float_str '.' then "" else ".")
                ^ " ")
       | _ -> assert false)
-  | Member s -> ("", vars, types) |> Scope.add_string @@ visit_struct_expr ast
+  | Member s -> ("", vars, types) |> Scope.add_string @@ parse_struct_expr ast
   | Call { callee; args } -> (
       match List.length args with
       | 0 ->
