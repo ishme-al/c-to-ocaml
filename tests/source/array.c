@@ -5,6 +5,8 @@ int main() {
 // 
   float a[3];
 
+  float c[3];
+
   return 0;
   // exit()
 }

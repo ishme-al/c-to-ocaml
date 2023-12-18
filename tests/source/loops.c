@@ -12,5 +12,11 @@ int notmain()
         // x= x - 1;
         x--;
     }
+    int accum = 0;
+    for(int a =0; a<2; a++) {
+        for(int b = 0; b<2; b++) {
+            accum = accum + a;
+        }
+    }
     return 0;
 }

@@ -54,7 +54,7 @@ let get_array_size (q : Ast.qual_type) : int =
   | _ -> failwith "should never occur"
 
 let parse_func_params (ast : Ast.function_decl) (vars : string VarMap.t)
-    (types : (string * string) list VarMap.t) : Scope.t =
+    (types : (string * string) list VarMap.t) (num: int): Scope.t =
   let parse_param (acc : Scope.t) (p : Ast.parameter) : Scope.t =
     let qual_type = parse_qual_type p.desc.qual_type in
     match Scope.get_type types qual_type with
@@ -73,18 +73,18 @@ let parse_func_params (ast : Ast.function_decl) (vars : string VarMap.t)
   | Some params when params.variadic ->
     failwith "Variadic functions are not supported"
   | Some params ->
-    List.fold ~f:parse_param params.non_variadic ~init:("", vars, types)
-  | None -> ("", vars, types)
+    List.fold ~f:parse_param params.non_variadic ~init:("", vars, types, num)
+  | None -> ("", vars, types, num)
 
 let parse_func_return_type (ast : Ast.function_decl) : string =
   parse_qual_type ast.function_type.result
 
 let parse_struct_field (ast : Ast.decl) (struct_name : string)
-    (vars : string VarMap.t) (types : (string * string) list VarMap.t) : Scope.t
+    (vars : string VarMap.t) (types : (string * string) list VarMap.t) (num: int): Scope.t
   =
   match ast.desc with
   | Field { name; qual_type; _ } ->
-    ("", vars, types)
+    ("", vars, types, num)
     |> Scope.add_type struct_name (name, parse_qual_type qual_type)
     |> Scope.add_string (name ^ ": " ^ parse_qual_type qual_type ^ "; ")
   | _ -> assert false
