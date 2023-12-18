@@ -1,11 +1,15 @@
 int main() {
-  float b[3] = {2.0, 2.3, 3.1};
+  int b[3] = {1, 2, 3};
 
-  // float c = b[2];
-// 
-  float a[3];
+  int x = b[2] + 3;
+  
+  b[1] = 3;
+  // int c = b[2] + 1;
+  // b[2] = 1;
 
-  char c[3];
+  int a[3];
+
+  // float c[3];
 
   return 0;
   // exit()

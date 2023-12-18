@@ -255,17 +255,25 @@ and visit_expr (ast : Ast.expr) (vars : string VarMap.t)
   | BinaryOperator { lhs; rhs; kind } -> (
       let op_type = parse_op_type lhs vars in
       match kind with
-      | Assign ->
-          ("", vars, types) |> Scope.add_string "let "
-          |> Scope.extend ~f:(visit_expr lhs)
-          |> Scope.add_string @@ " = "
-          |> Scope.extend ~f:(visit_expr rhs)
-          |> Scope.add_string " in\n"
-      | _ ->
-          ("", vars, types)
-          |> Scope.add_string (parse_binary_operator kind op_type ^ " ")
-          |> Scope.extend ~f:(visit_expr lhs)
-          |> Scope.extend ~f:(visit_expr rhs))
+      | Assign -> (
+          match (is_array_subscript lhs) with 
+          | true -> 
+            let name = get_array_name lhs in
+            let index = get_array_index lhs in
+            ("", vars, types) |> Scope.add_string @@ "let " ^ name ^ " = set_at_index " ^ name ^ " " ^ index ^ "( " 
+            |> Scope.extend ~f:(visit_expr rhs)
+            |> Scope.add_string ") in\n"
+          | false -> 
+            ("", vars, types) |> Scope.add_string "let "
+            |> Scope.extend ~f:(visit_expr lhs)
+            |> Scope.add_string " = "
+            |> Scope.extend ~f:(visit_expr rhs)
+            |> Scope.add_string " in\n" )
+      | _ -> 
+        ("", vars, types)
+        |> Scope.add_string (parse_binary_operator kind op_type ^ " ")
+        |> Scope.extend ~f:(visit_expr lhs)
+        |> Scope.extend ~f:(visit_expr rhs))
   | UnaryOperator { kind; operand; _ } -> (
       match kind with
       | PostInc ->
@@ -281,6 +289,10 @@ and visit_expr (ast : Ast.expr) (vars : string VarMap.t)
           |> Scope.extend ~f:(visit_expr operand)
           |> Scope.add_string " - 1 in\n"
       | _ -> failwith "Unrecognized Unary Operator")
+  | ArraySubscript {base;index; _} ->
+    let name = Collect_vars.get_expr_names base in
+    let stringIndex = get_array_index ast in
+    ("", vars, types) |> Scope.add_string @@ "(List.nth_exn " ^ name ^ " " ^ stringIndex ^ ") "
   | DeclRef d -> (
       match d.name with
       | IdentifierName name -> ("", vars, types) |> Scope.add_string (name ^ " ")
