@@ -8,8 +8,9 @@ int notmain()
         a= a +1;
         y = x +1;
     }
-    // while( x< 3) {
-    //     x--;
-    // }
+    while( x< 3) {
+        // x= x - 1;
+        x--;
+    }
     return 0;
 }

@@ -18,4 +18,11 @@ let notmain : int =
       forLoop (y, x) (b, a)
   in
   let y, x = forLoop (y, x) (b, a) in
+  let rec whileLoop x =
+    if Int.( < ) x 3 then x
+    else
+      let x = x - 1 in
+      whileLoop x
+  in
+  let x = whileLoop x in
   0

@@ -27,6 +27,9 @@ let rec visit_stmt (ast : Ast.stmt) (func_name : string)
     visit_if_stmt cond then_branch else_branch func_name vars types
   | For _ ->
     visit_for_stmt ast func_name vars types
+
+  | While _ ->
+    visit_while_stmt ast func_name vars types
   | Return (Some ret_expr) -> (
       match func_name with
       | "main" ->
@@ -84,14 +87,14 @@ and visit_for_stmt (ast : Ast.stmt) (func_name : string)
       let mutated = Collect_vars.collect_mutated_vars ast [] in
       let allMutated = String.concat ~sep:"," mutated in
       let varName = match init with 
-        Some e -> (
-          match e.desc with 
-          | Decl decl_list ->
-            List.fold ~init: []
-              ~f:(fun sArray s ->
-                  (get_decl_names s)::sArray)
-              decl_list
-          | _ -> failwith "shouldn't occur" )
+          Some e -> (
+            match e.desc with 
+            | Decl decl_list ->
+              List.fold ~init: []
+                ~f:(fun sArray s ->
+                    (get_decl_names s)::sArray)
+                decl_list
+            | _ -> failwith "shouldn't occur" )
         | None -> failwith"implement later" in
       let allVarNames = String.concat ~sep:"," varName in
 
@@ -113,7 +116,41 @@ and visit_for_stmt (ast : Ast.stmt) (func_name : string)
   | _ -> failwith "never occurs"
 
 
+and visit_while_stmt (ast : Ast.stmt) (func_name : string)
+    (vars : string VarMap.t) (types : (string * string) list VarMap.t): Scope.t =
+  match ast.desc with 
+  | While { cond; body;_ } -> (
+      let mutated = Collect_vars.collect_mutated_vars ast [] in
+      let allMutated = String.concat ~sep:"," mutated in
+      (* let varName = match init with 
+         Some e -> (
+          match e.desc with 
+          | Decl decl_list ->
+            List.fold ~init: []
+              ~f:(fun sArray s ->
+                  (get_decl_names s)::sArray)
+              decl_list
+          | _ -> failwith "shouldn't occur" )
+         | None -> failwith"implement later" in
+         let allVarNames = String.concat ~sep:"," varName in *)
 
+      (* let answer = "let " ^ allMutated ^ " = " *)
+      (* let start = ("", vars, types)  in *)
+    (*
+    let initStart = match init with 
+      | Some e -> Scope.extend start ~f:(visit_stmt e func_name ) 
+      | None -> start in  *)
+      ("", vars, types) |>
+      Scope.add_string @@ ("let rec whileLoop (" ^ allMutated ^ ") = if ")
+      |> Scope.extend ~f:(visit_expr (cond)) 
+      |> Scope.add_string @@ " then "
+      |> Scope.add_string @@ "(" ^ allMutated ^ ") \n"
+      |> Scope.add_string @@ " else "
+      |> Scope.extend ~f:(visit_stmt body func_name)
+      |> Scope.add_string @@ "whileLoop (" ^ allMutated ^ ") in \n"
+      |> Scope.add_string @@ "let " ^ allMutated ^ " = whileLoop (" ^ allMutated ^ ") in \n" )
+
+  | _ -> failwith "never occurs"
 
 
 and visit_function_decl (ast : Ast.function_decl) (vars : string VarMap.t)
@@ -190,9 +227,9 @@ and visit_decl (ast : Ast.decl) (vars : string VarMap.t)
     ("", vars, types)
 
 and get_decl_names (ast : Ast.decl) 
-    (* (vars : string VarMap.t) *)
-    (* (types : (string * string) list VarMap.t)  *)
-    (* (names: string list) *)
+  (* (vars : string VarMap.t) *)
+  (* (types : (string * string) list VarMap.t)  *)
+  (* (names: string list) *)
   : (string) =
   match ast.desc with
   | Function function_decl -> get_function_name function_decl
@@ -233,6 +270,12 @@ and visit_expr (ast : Ast.expr) (vars : string VarMap.t)
         |> Scope.add_string " = "
         |> Scope.extend ~f:(visit_expr operand)
         |> Scope.add_string " + 1 in\n"
+      | PostDec ->
+        ("", vars, types) |> Scope.add_string "let "
+        |> Scope.extend ~f:(visit_expr operand)
+        |> Scope.add_string " = "
+        |> Scope.extend ~f:(visit_expr operand)
+        |> Scope.add_string " - 1 in\n"
       | _ -> failwith "Unrecognized Unary Operator" )
   | DeclRef d -> (
       match d.name with

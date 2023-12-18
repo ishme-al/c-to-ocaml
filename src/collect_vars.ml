@@ -48,6 +48,15 @@ let rec collect_from_stmt (stmt : Ast.stmt) (muts : string list)
     (* if any variable is initialized, it is not mutated*)
       (* if a variable is in the condition, if it is declared in scope, not needed as intput/output, if it is o*)
   )
+    | While { body; _} -> (
+      let muts_body, inits_body = collect_from_stmt body muts inits in 
+      (muts_body, inits_body)
+      (* collect all variable previously mutated in body*)
+      (* if a variable is declared inside, we should redeclare inside every time, so don't need to keep in scope*)
+      (* if a variable is not declared inside body but then mutated, we need to pass it in as input and output of every iteration!*)
+      (* if any variable is initialized, it is not mutated*)
+        (* if a variable is in the condition, if it is declared in scope, not needed as intput/output, if it is o*)
+    )
   | Return _ -> ([], inits)
   | _ -> failwith "uhoh in collect_from_stmt"
 
@@ -68,6 +77,8 @@ and collect_from_expr (expr : Ast.expr) (muts : string list)
     match kind with 
     | PostInc ->
       collect_from_expr operand muts inits
+    | PostDec ->
+        collect_from_expr operand muts inits
     | _ -> (muts, inits)
   )
   | DeclRef d ->

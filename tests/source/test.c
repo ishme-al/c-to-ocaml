@@ -1,6 +1,11 @@
 int main()
 {
     int x = 0;
+
+    while( x < 0) {
+        int z =1;
+        x++;
+    }
     int y= 0;
     int z = 2;
 
