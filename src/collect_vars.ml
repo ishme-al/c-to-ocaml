@@ -2,6 +2,8 @@
 open Clang
 open Core
 
+[@@@ocaml.warning "-26"]
+
 let rec collect_from_stmt (stmt : Ast.stmt) (muts : string list)
     (inits : string list) : string list * string list =
   match stmt.desc with
@@ -24,6 +26,28 @@ let rec collect_from_stmt (stmt : Ast.stmt) (muts : string list)
       | Some e -> collect_from_stmt e muts_then inits_then
       | None -> (muts_then, inits_then)
   )
+  (* we only to return the variable mutated within the scope of the for loop, everything else can be modified in the loop using decl*)
+  (* pass in initial value if for loop, pass in variables value if while loop*)
+    (* init is Some if for loop has initialization, None if not*)
+    (* don't know what condition variable is *)
+    (* cond can be transated similar to if?*)
+    (* body can be trasnlated as another compound*)
+    (**)
+  | For { init; body; inc; _ } -> (
+    let muts_init, inits_init = match init with 
+    | Some e -> collect_from_stmt e muts inits
+    | None -> (muts, inits) in
+    let muts_inc, inits_inc = match inc with 
+    | Some e -> collect_from_stmt e muts_init inits_init
+    | None -> (muts_init, inits_init) in
+    let muts_body, inits_body = collect_from_stmt body muts_inc inits_inc in 
+    (muts_body, inits_body)
+    (* collect all variable previously mutated in body*)
+    (* if a variable is declared inside, we should redeclare inside every time, so don't need to keep in scope*)
+    (* if a variable is not declared inside body but then mutated, we need to pass it in as input and output of every iteration!*)
+    (* if any variable is initialized, it is not mutated*)
+      (* if a variable is in the condition, if it is declared in scope, not needed as intput/output, if it is o*)
+  )
   | Return _ -> ([], inits)
   | _ -> failwith "uhoh in collect_from_stmt"
 
@@ -40,6 +64,12 @@ and collect_from_expr (expr : Ast.expr) (muts : string list)
       match kind with
       | Assign -> collect_from_expr lhs muts inits
       | _ -> (muts, inits))
+  | UnaryOperator {kind; operand; _} -> (
+    match kind with 
+    | PostInc ->
+      collect_from_expr operand muts inits
+    | _ -> (muts, inits)
+  )
   | DeclRef d ->
       let name =
         match d.name with IdentifierName name -> name | _ -> assert false

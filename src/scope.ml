@@ -5,7 +5,11 @@ module VarMap = Map.Make (String)
 module Scope = struct
   type t = string * string VarMap.t * (string * string) list VarMap.t
 
-  let empty : t = ("", VarMap.empty, VarMap.empty)
+  let empty : t = ("[@@@ocaml.warning \"-26\"] \n
+  [@@@ocaml.warning \"-27\"]\n
+  open Core \n"
+  , 
+  VarMap.empty, VarMap.empty)
 
   let aggregate (scope1 : t) (scope2 : t) : t =
     let str, _, _ = scope1 in
