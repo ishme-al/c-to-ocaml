@@ -107,8 +107,8 @@ and visit_for_stmt (ast : Ast.stmt) (func_name : string)
       |> Scope.add_string @@ " else "
       |> Scope.extend ~f:(visit_stmt body func_name)
       |> Scope.extend ~f:(visit_stmt (Option.value_exn inc) func_name)
-      |> Scope.add_string @@ "forLoop " ^ allMutated ^ " " ^ allVarNames ^ "\n"
-      |> Scope.add_string @@ "let " ^ allMutated ^ " = forLoop " ^ allMutated ^ " "  ^ allVarNames ^" in \n" )
+      |> Scope.add_string @@ "forLoop (" ^ allMutated ^ ") (" ^ allVarNames ^ ") in \n"
+      |> Scope.add_string @@ "let " ^ allMutated ^ " = forLoop (" ^ allMutated ^ ") ("  ^ allVarNames ^") in \n" )
 
   | _ -> failwith "never occurs"
 
