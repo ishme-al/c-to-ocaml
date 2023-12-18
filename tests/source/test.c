@@ -1,5 +1,6 @@
 int main()
 {
+    int  arr[5];
     int x = 0;
 
     while( x < 0) {

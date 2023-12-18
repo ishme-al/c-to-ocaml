@@ -20,6 +20,11 @@ val parse_struct_expr : Clang.Ast.expr -> string
 val parse_op_type : Clang.Ast.expr -> string Scope.VarMap.t -> string
 val parse_binary_operator : Clang.Ast.binary_operator_kind -> string -> string
 
+val is_array_type :  Clang.Ast.qual_type -> bool
+
+val get_array_type : Clang.Ast.qual_type ->string
+
+val get_array_size : Clang.Ast.qual_type -> int
 
 (*
 tree
