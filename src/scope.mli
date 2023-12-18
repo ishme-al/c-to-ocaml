@@ -20,4 +20,6 @@ module Scope : sig
 
   val extend :
     f:(string VarMap.t -> (string * string) list VarMap.t -> t) -> t -> t
+
+  val new_level : f:(string VarMap.t -> (string * string) list VarMap.t -> t) -> t -> t
 end

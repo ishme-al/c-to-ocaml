@@ -24,7 +24,7 @@ let rec parse_qual_type (q : Ast.qual_type) : string =
       | Char_S -> "char"
       | Float -> "float"
       | Void -> "unit"
-      | _ -> failwith "handle others later")
+      | _ -> failwith "Unsupported BuiltInType")
   (* will refactor into two helpers later, but focused on functionality instead of digging through documentation to find appropriate record equivalent for now*)
   | Elaborated struct_type -> (
       match struct_type.named_type with
@@ -34,9 +34,16 @@ let rec parse_qual_type (q : Ast.qual_type) : string =
               match record_object.name with
               | IdentifierName name -> name
               | _ -> assert false)
-          | _ -> failwith "handle others later"))
+          | _ -> assert false))
   | ConstantArray { element; _ } -> parse_qual_type element ^ " list"
-  | _ -> failwith "handle others later"
+  | _ -> failwith "Unsupported QualType"
+
+let parse_default_value (val_type: string) : string = 
+  match val_type with
+  | "int" -> "0"
+  | "float" -> "0.0"
+  | "char" -> "' '"
+  | _ -> failwith @@ "Unsupported type " ^ val_type ^ ": unknown default value"
 
 let is_array_type (q : Ast.qual_type) : bool =
   match q.desc with
@@ -46,12 +53,12 @@ let is_array_type (q : Ast.qual_type) : bool =
 let get_array_type (q : Ast.qual_type) : string =
   match q.desc with
   | ConstantArray { element; _ } -> parse_qual_type element
-  | _ -> failwith "should never occur"
+  | _ -> assert false
 
 let get_array_size (q : Ast.qual_type) : int =
   match q.desc with
   | ConstantArray { size; _ } -> size
-  | _ -> failwith "should never occur"
+  | _ -> assert false
 
 let parse_func_params (ast : Ast.function_decl) (vars : string VarMap.t)
     (types : (string * string) list VarMap.t) : Scope.t =

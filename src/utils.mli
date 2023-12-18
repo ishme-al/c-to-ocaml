@@ -1,5 +1,6 @@
 val capitalize_first_letter : string -> string
 val parse_qual_type : Clang.Ast.qual_type -> string
+val parse_default_value : string -> string
 
 val parse_func_params :
   Clang.Ast.function_decl ->
@@ -19,11 +20,8 @@ val parse_struct_field :
 val parse_struct_expr : Clang.Ast.expr -> string
 val parse_op_type : Clang.Ast.expr -> string Scope.VarMap.t -> string
 val parse_binary_operator : Clang.Ast.binary_operator_kind -> string -> string
-
-val is_array_type :  Clang.Ast.qual_type -> bool
-
-val get_array_type : Clang.Ast.qual_type ->string
-
+val is_array_type : Clang.Ast.qual_type -> bool
+val get_array_type : Clang.Ast.qual_type -> string
 val get_array_size : Clang.Ast.qual_type -> int
 
 (*
@@ -65,7 +63,3 @@ let getnthCompoundLists (decl: Clang.Stmt.t) n =
   | Compound statement_list -> statement_list in
   List.nth_exn temp n
 *)
-
-
-
- 
