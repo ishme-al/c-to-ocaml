@@ -108,7 +108,7 @@ let run ctxt : unit =
          assert_command ?exit_code:(return_code filename)
            ?foutput:
              (Option.some (fun s ->
-                  assert_equal (expected filename)
+                  assert_equal ~printer:Fun.id (expected filename)
                   @@ (Sequence.of_seq s |> Sequence.to_list
                     |> String.of_char_list)))
            ~ctxt (output_folder ^ filename) [])
