@@ -21,6 +21,16 @@ let () =
       for_main sum x
   in
   let sum = for_main sum x in
+  let i : int = 0 in
+  let rec for_main b i =
+    if not @@ Int.( < ) i 3 then b
+    else
+      let b = set_at_index b i (Int.( + ) (List.nth_exn b i) 1) in
+      printf "%d, " (List.nth_exn b i);
+      let i = Int.( + ) i 1 in
+      for_main b i
+  in
+  let b = for_main b i in
   let x : int = Int.( + ) (List.nth_exn b 2) 3 in
   let b = set_at_index b 1 3 in
   let a : int list = List.init 3 ~f:(fun _ -> 0) in

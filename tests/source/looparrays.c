@@ -6,6 +6,11 @@ int main() {
     sum = sum + b[x];
   }
 
+  for (int i = 0; i < 3; i = i + 1) {
+        b[i]= b[i] +1;
+        printf("%d, ", b[i]);
+    }
+
   int x = b[2] + 3;
   
   b[1] = 3;
