@@ -94,7 +94,7 @@ let parse_func_params (ast : Ast.function_decl) (vars : string VarMap.t)
       failwith "Variadic functions are not supported"
   | Some params ->
       List.fold ~f:parse_param params.non_variadic ~init:("", vars, types)
-  | None -> ("", vars, types)
+  | None -> ("()", vars, types)
 
 let parse_func_return_type (ast : Ast.function_decl) : string =
   parse_qual_type ast.function_type.result

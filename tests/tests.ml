@@ -58,32 +58,32 @@ let return_code (filename : string) : Caml_unix.process_status option =
   let rc =
     match filename with
     | "array.ml" -> 0
-    | "char.ml" -> 0
-    | "dune" -> 0
-    | "error.ml" -> 0
-    | "foo.ml" -> 0
-    | "functions.ml" -> 0
-    | "if2.ml" -> 0
-    | "ifreturn.ml" -> 0
-    | "looparrays.ml" -> 0
-    | "main.ml" -> 0
-    | "print.ml" -> 0
-    | "scope.ml" -> 0
-    | "struct.ml" -> 0
-    | "test.ml" -> 0
     | "arrayfunc.ml" -> 0
+    | "char.ml" -> 0
     | "comments.ml" -> 0
+    | "dune" -> 0
     | "elseif.ml" -> 0
+    | "error.ml" -> 0
     | "float.ml" -> 0
+    | "foo.ml" -> 0
     | "foo2.ml" -> 0
     | "if.ml" -> 0
+    | "if2.ml" -> 0
     | "ifarrays.ml" -> 0
+    | "ifreturn.ml" -> 0
     | "int.ml" -> 0
+    | "functions.ml" -> 0
     | "loops.ml" -> 0
+    | "looparrays.ml" -> 0
+    | "main.ml" -> 0
     | "nestedloops.ml" -> 0
+    | "print.ml" -> 0
     | "recursive.ml" -> 0
+    | "scope.ml" -> 0
     | "statements.ml" -> 0
+    | "struct.ml" -> 0
     | "structs.ml" -> 0
+    | "test.ml" -> 0
     | "voidfunc.ml" -> 0
     | _ -> assert_failure @@ filename ^ " return code not implemented"
   in
@@ -106,6 +106,7 @@ let run ctxt : unit =
                  @@ (Sequence.of_seq s |> Sequence.to_list |> String.of_char_list ) 
         ))
              ~ctxt path [])
+
 
 let test ctxt =
   Sys_unix.chdir "../../../tests";
