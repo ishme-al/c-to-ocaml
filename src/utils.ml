@@ -62,7 +62,7 @@ let is_array_subscript (q : Ast.expr) : bool =
 let get_array_name (q : Ast.expr) : string =
   match q.desc with
   | ArraySubscript { base; _ } -> Collect_vars.get_expr_names base
-  | _ -> failwith "shouldn't occur"
+  | _ -> assert false
 
 let get_array_index (q : Ast.expr) : string =
   match q.desc with
@@ -71,7 +71,7 @@ let get_array_index (q : Ast.expr) : string =
       | IntegerLiteral i -> (
           match i with Int value -> string_of_int value | _ -> assert false)
       | _ -> Collect_vars.get_expr_names index)
-  | _ -> failwith "shouldn't occur"
+  | _ -> assert false
 
 let parse_func_params (ast : Ast.function_decl) (vars : string VarMap.t)
     (types : (string * string) list VarMap.t) : Scope.t =
@@ -108,7 +108,6 @@ let parse_struct_field (ast : Ast.decl) (struct_name : string)
       |> Scope.add_type struct_name (name, parse_qual_type qual_type)
       |> Scope.add_string (name ^ ": " ^ parse_qual_type qual_type ^ "; ")
   | _ -> assert false
-(* | _ -> Clang.Printer.decl Format.std_formatter ast; Out_channel.flush stdout; assert false *)
 
 let parse_struct_expr (ast : Ast.expr) : string =
   match ast.desc with
@@ -118,7 +117,7 @@ let parse_struct_expr (ast : Ast.expr) : string =
         match tempStruct.desc with
         | DeclRef d -> (
             match d.name with IdentifierName name -> name | _ -> assert false)
-        | _ -> failwith "should never occur - struct name"
+        | _ -> assert false
       in
       let field = s.field in
       let fieldName =
@@ -126,11 +125,11 @@ let parse_struct_expr (ast : Ast.expr) : string =
         | FieldName f -> (
             match f.desc.name with
             | IdentifierName i -> i
-            | _ -> failwith "should never occur -field")
-        | _ -> failwith "should never occur -field2"
+            | _ -> assert false)
+        | _ -> assert false
       in
       name ^ "." ^ fieldName ^ " "
-  | _ -> failwith "handle other cases later"
+  | _ -> failwith "Error parsing struct expression"
 
 let remove_list_suffix (list_type : string) : string =
   String.sub list_type ~pos:0 ~len:(String.length list_type - 5)
@@ -151,7 +150,7 @@ let parse_op_type (expr : Ast.expr) (vars : string VarMap.t) : string =
       let name = get_array_name expr in
       Scope.get_var vars name |> String.strip |> capitalize_first_letter
       |> remove_list_suffix
-  | _ -> failwith "handle other cases later - optype"
+  | _ -> failwith "Unsupported operation type"
 
 let parse_binary_operator (op_kind : Ast.binary_operator_kind)
     (var_type : string) : string =
@@ -170,7 +169,7 @@ let parse_binary_operator (op_kind : Ast.binary_operator_kind)
     | Assign -> "="
     | Mul -> "*"
     | Div -> "/"
-    | _ -> failwith "handle others later"
+    | _ -> failwith "Unsupported binary operator"
   in
   var_type ^ ".( " ^ op ^ " )"
 

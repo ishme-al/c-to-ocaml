@@ -12,10 +12,6 @@ let get_decl_names (ast : Ast.decl) : string =
       | _ -> assert false)
   | Var var_decl -> var_decl.var_name
   | RecordDecl struct_decl -> struct_decl.name
-  (* | Field { name; qual_type; _ } ->
-      Scope.add_string
-        (name ^ ": " ^ parse_qual_type qual_type ^ "; ")
-        ("", vars, types) *)
   | EmptyDecl -> ""
   | _ ->
     Clang.Printer.decl Format.std_formatter ast;
@@ -33,7 +29,7 @@ let get_expr_names (ast : Ast.expr): string =
       | DeclRef d -> (
           match d.name with IdentifierName name -> name 
           | _ -> assert false)
-      | _ -> failwith "should never occur - struct name"
+      | _ -> assert false
     in
     let field = s.field in
     let fieldName =
@@ -41,11 +37,11 @@ let get_expr_names (ast : Ast.expr): string =
       | FieldName f -> (
           match f.desc.name with
           | IdentifierName i -> i
-          | _ -> failwith "should never occur -field")
-      | _ -> failwith "should never occur -field2"
+          | _ -> assert false)
+      | _ -> assert false
     in
     name ^ "." ^ fieldName
-  | _ -> failwith "uh-oh in get_expr_name" 
+  | _ -> failwith "Error getting expression name" 
 
 
 let rec collect_from_stmt (stmt : Ast.stmt) (muts : string list)
@@ -103,13 +99,13 @@ let rec collect_from_stmt (stmt : Ast.stmt) (muts : string list)
     )
   | Break -> (muts, inits)
   | Return _ -> ([], inits)
-  | _ -> failwith "uhoh in collect_from_stmt"
+  | _ -> failwith "Erorr determining mutated variables in statement"
 
 and collect_from_decl (decl : Ast.decl) (muts : string list)
     (inits : string list) : string list * string list =
   match decl.desc with
   | Var var_decl -> (muts, var_decl.var_name :: inits)
-  | _ -> failwith "uhoh in collect_from_decl"
+  | _ -> failwith "Error determining mutated variables in declaration"
 
 and collect_from_expr (expr : Ast.expr) (muts : string list)
     (inits : string list) : string list * string list =
@@ -146,7 +142,7 @@ and collect_from_expr (expr : Ast.expr) (muts : string list)
 
   | Call _ -> (muts, inits)
   | IntegerLiteral _ -> (muts, inits)
-  | _ -> failwith "uhoh in collect_from_expr"
+  | _ -> failwith "Error determining mutated variables in expression"
 
 let collect_mutated_vars (stmt : Ast.stmt) (muts_init : string list) :
   string list =
