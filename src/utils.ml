@@ -118,6 +118,7 @@ let parse_struct_field (ast : Ast.decl) (struct_name : string)
     |> Scope.add_type struct_name (name, parse_qual_type qual_type)
     |> Scope.add_string (name ^ ": " ^ parse_qual_type qual_type ^ "; ")
   | _ -> assert false
+  (* | _ -> Clang.Printer.decl Format.std_formatter ast; Out_channel.flush stdout; assert false *)
 
 let parse_struct_expr (ast : Ast.expr) : string =
   match ast.desc with

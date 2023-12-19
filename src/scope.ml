@@ -7,6 +7,7 @@ module Scope = struct
   let empty : t =
     ( "[@@@ocaml.warning \"-26\"] \n\n\
       \  [@@@ocaml.warning \"-27\"]\n\n\
+      \  [@@@ocaml.warning \"-32\"]\n\n\
       \  open Core \n\n\
       \  let rec set_at_index (lst: 'a list) (index:int) (value: 'a) : 'a list =\n\
       \    match lst with\n\
