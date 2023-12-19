@@ -5,10 +5,10 @@ module Scope = struct
   type t = string * string VarMap.t * (string * string) list VarMap.t
 
   let empty : t =
-    ( "[@@@ocaml.warning \"-26\"] \n\n\
-      \  [@@@ocaml.warning \"-27\"]\n\n\
-      \  [@@@ocaml.warning \"-32\"]\n\n\
-      \  [@@@ocaml.warning \"-69\"]\n\n\
+    ( "[@@@warning \"-26\"] \n\n\
+      \  [@@@warning \"-27\"]\n\n\
+      \  [@@@warning \"-32\"]\n\n\
+      \  [@@@warning \"-69\"]\n\n\
       \  open Core \n\n\
       \  let rec set_at_index (lst: 'a list) (index:int) (value: 'a) : 'a list =\n\
       \    match lst with\n\

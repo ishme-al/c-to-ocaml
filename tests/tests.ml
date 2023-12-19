@@ -54,11 +54,7 @@ let compile ctxt : unit =
            ])
 
 (* commented out:
-  test.c
   error.c
-  recursive.c
-  scope.c
-  int.c
 *)
 
 let return_code (filename : string) : Caml_unix.process_status option =

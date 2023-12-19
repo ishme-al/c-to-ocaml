@@ -1,7 +1,7 @@
-[@@@ocaml.warning "-26"]
-[@@@ocaml.warning "-27"]
-[@@@ocaml.warning "-32"]
-[@@@ocaml.warning "-69"]
+[@@@warning "-26"]
+[@@@warning "-27"]
+[@@@warning "-32"]
+[@@@warning "-69"]
 
 open Core
 
@@ -14,6 +14,21 @@ let rec set_at_index (lst : 'a list) (index : int) (value : 'a) : 'a list =
 let notmain () : int =
   let x : int = Int.( + ) 1 2 in
   let y : int = 2 in
+  let a : int = 0 in
+  let b : int = 0 in
+  let rec for_notmain (b, a) (y, x) =
+    match Int.( < ) a 10 with
+    | false -> (y, x)
+    | true ->
+        let x = Int.( + ) x 1 in
+        if Int.( > ) x 3 then (y, x)
+        else
+          let a = Int.( + ) a 1 in
+          let y = Int.( + ) x 1 in
+          let a = a + 1 in
+          for_notmain (b, a) (y, x)
+  in
+  let y, x = for_notmain (b, a) (y, x) in
   let a : int = 0 in
   let rec for_notmain a () =
     match Int.( < ) a 3 with
