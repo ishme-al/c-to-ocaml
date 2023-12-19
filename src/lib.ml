@@ -155,8 +155,7 @@ and visit_while_stmt (ast : Ast.stmt) (func_name : string)
       let allMutated = "(" ^ String.concat ~sep:"," mutated ^ ")" in
       let pass_on_mutated = " ( " ^ allMutated ^ " ) " in
       ("", vars, types)
-      |> Scope.add_string @@ "let rec " ^ func_name ^ allMutated
-         ^ " = match  "
+      |> Scope.add_string @@ "let rec " ^ func_name ^ allMutated ^ " = match  "
       |> Scope.extend ~f:(visit_expr cond (mutated_vars @ [ allMutated ]))
       |> Scope.add_string @@ " with | false -> "
       |> Scope.add_string @@ allMutated ^ "\n"
@@ -314,30 +313,36 @@ and visit_expr (ast : Ast.expr) (mutated_vars : string list)
           |> Scope.extend ~f:(visit_expr rhs mutated_vars))
   | UnaryOperator { kind; operand; _ } -> (
       match kind with
-      | PostInc ->
-          (match is_array_subscript operand with 
+      | PostInc -> (
+          match is_array_subscript operand with
           | true ->
-            let name = get_array_name operand in
-            let index = get_array_index operand in
-            ("", vars, types) |>Scope.add_string @@  "let " ^ name ^ " = set_at_index " ^ name ^ " " ^ index ^ " (( List.nth_exn " ^ name ^ " " ^ index ^ " ) + 1 ) in\n" 
+              let name = get_array_name operand in
+              let index = get_array_index operand in
+              ("", vars, types)
+              |> Scope.add_string @@ "let " ^ name ^ " = set_at_index " ^ name
+                 ^ " " ^ index ^ " (( List.nth_exn " ^ name ^ " " ^ index
+                 ^ " ) + 1 ) in\n"
           | false ->
-          ("", vars, types) |> Scope.add_string "let "
-          |> Scope.extend ~f:(visit_expr operand mutated_vars)
-          |> Scope.add_string " = "
-          |> Scope.extend ~f:(visit_expr operand mutated_vars)
-          |> Scope.add_string " + 1 in\n")
-      | PostDec ->
-          (match is_array_subscript operand with 
-          | true -> 
-            let name = get_array_name operand in
-            let index = get_array_index operand in
-            ("", vars, types) |>Scope.add_string @@  "let " ^ name ^ " = set_at_index " ^ name ^ " " ^ index ^ " (( List.nth_exn " ^ name ^ " " ^ index ^ " ) - 1 ) in\n" 
+              ("", vars, types) |> Scope.add_string "let "
+              |> Scope.extend ~f:(visit_expr operand mutated_vars)
+              |> Scope.add_string " = "
+              |> Scope.extend ~f:(visit_expr operand mutated_vars)
+              |> Scope.add_string " + 1 in\n")
+      | PostDec -> (
+          match is_array_subscript operand with
+          | true ->
+              let name = get_array_name operand in
+              let index = get_array_index operand in
+              ("", vars, types)
+              |> Scope.add_string @@ "let " ^ name ^ " = set_at_index " ^ name
+                 ^ " " ^ index ^ " (( List.nth_exn " ^ name ^ " " ^ index
+                 ^ " ) - 1 ) in\n"
           | false ->
-          ("", vars, types) |> Scope.add_string "let "
-          |> Scope.extend ~f:(visit_expr operand mutated_vars)
-          |> Scope.add_string " = "
-          |> Scope.extend ~f:(visit_expr operand mutated_vars)
-          |> Scope.add_string " - 1 in\n" )
+              ("", vars, types) |> Scope.add_string "let "
+              |> Scope.extend ~f:(visit_expr operand mutated_vars)
+              |> Scope.add_string " = "
+              |> Scope.extend ~f:(visit_expr operand mutated_vars)
+              |> Scope.add_string " - 1 in\n")
       | _ -> failwith "Unrecognized Unary Operator")
   | ArraySubscript { base; index; _ } ->
       let name = Collect_vars.get_expr_names base in
@@ -437,4 +442,3 @@ let format (output : string) (source : string) : string option =
         Sys_unix.remove ".translated.ml";
         prerr_endline @@ ".translated.ml:\n" ^ source);
       None
-

@@ -23,12 +23,9 @@ val parse_binary_operator : Clang.Ast.binary_operator_kind -> string -> string
 val is_array_type : Clang.Ast.qual_type -> bool
 val get_array_type : Clang.Ast.qual_type -> string
 val get_array_size : Clang.Ast.qual_type -> int
-
-val get_array_name : Clang.Ast.expr -> string 
-
-val get_array_index:  Clang.Ast.expr -> string 
-
-val is_array_subscript : Clang.Ast.expr -> bool 
+val get_array_name : Clang.Ast.expr -> string
+val get_array_index : Clang.Ast.expr -> string
+val is_array_subscript : Clang.Ast.expr -> bool
 (*
 tree
    let tree = Clang.Ast.parse_file "tests/source/if.c";;

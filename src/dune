@@ -3,7 +3,6 @@
  (modules scope)
  (libraries core))
 
-
 (library
  (name find_rec)
  (modules find_rec)
@@ -18,7 +17,7 @@
  (preprocess
   (pps bisect_ppx)))
 
-  (library
+(library
  (name utils)
  (modules utils)
  (libraries core clangml scope collect_vars)
@@ -28,7 +27,15 @@
 (library
  (name lib)
  (modules lib)
- (libraries core clangml collect_vars find_rec utils scope str ocamlformat-lib
+ (libraries
+  core
+  clangml
+  collect_vars
+  find_rec
+  utils
+  scope
+  str
+  ocamlformat-lib
   core_unix.sys_unix)
  (preprocess
   (pps bisect_ppx)))
@@ -36,10 +43,6 @@
 (executable
  (name tocaml)
  (modules tocaml)
- (libraries
-  lib
-  core
-  core_unix.command_unix
-  fswatch)
+ (libraries lib core core_unix.command_unix fswatch)
  (preprocess
   (pps ppx_let)))

@@ -16,9 +16,11 @@ module Scope = struct
       \      if index = 0 then\n\
       \        value :: tl\n\
       \      else\n\
-      \        hd :: set_at_index tl (index - 1) value \n ",
+      \        hd :: set_at_index tl (index - 1) value \n\
+      \ ",
       VarMap.empty,
       VarMap.empty )
+
   let aggregate (scope1 : t) (scope2 : t) : t =
     let str, _, _ = scope1 in
     let str', var_map', type_map' = scope2 in
@@ -61,7 +63,8 @@ module Scope = struct
       (scope : t) : t =
     f (get_vars scope) (get_types scope) |> aggregate scope
 
-  let new_level ~(f: string VarMap.t -> (string * string) list VarMap.t -> t) (scope : t) : t =
+  let new_level ~(f : string VarMap.t -> (string * string) list VarMap.t -> t)
+      (scope : t) : t =
     let _, vars, _ = scope in
     let str, _, types = extend ~f scope in
     (str, vars, types)
