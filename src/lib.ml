@@ -418,7 +418,7 @@ let parse (source : string) : string =
        ~f:(fun s item ->
          Scope.aggregate s
          @@ visit_decl item [] (Scope.get_vars s) (Scope.get_types s))
-       ast.desc.items)
+       items)
 
 (* do not move this. its names conflicts with clangml *)
 open Ocamlformat_lib
