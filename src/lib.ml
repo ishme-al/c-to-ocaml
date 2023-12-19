@@ -321,14 +321,18 @@ and visit_expr (ast : Ast.expr) (mutated_vars: string list) (vars : string VarMa
       ("", vars, types)
       |> Scope.add_string
            ("'" ^ (String.of_char @@ Char.of_int_exn value) ^ "' ")
+  | StringLiteral { bytes; _ } ->
+      ("", vars, types) |> Scope.add_string ("\"" ^ bytes ^ "\" ")
   | Member s -> ("", vars, types) |> Scope.add_string @@ parse_struct_expr ast
   | Call { callee; args } -> (
+      let callee_name = String.strip @@ Scope.get_string @@ visit_expr callee mutated_vars vars types in
       match List.length args with
       | 0 ->
           ("", vars, types)
           |> Scope.extend ~f:(visit_expr callee mutated_vars)
           |> Scope.add_string "();"
       | _ ->
+          let end_str = if String.equal callee_name "printf" then ";" else "" in
           ("", vars, types) |> Scope.add_string "("
           |> Scope.extend ~f:(visit_expr callee mutated_vars)
           |> (fun s ->
@@ -337,13 +341,23 @@ and visit_expr (ast : Ast.expr) (mutated_vars: string list) (vars : string VarMa
                    Scope.aggregate s
                    @@ visit_expr arg mutated_vars (Scope.get_vars s) (Scope.get_types s))
                  args)
-          |> Scope.add_string ")")
+          |> Scope.add_string @@ ")" ^ end_str)
   | _ ->
       Clang.Printer.expr Format.std_formatter ast;
       ("", vars, types)
 
 let parse (source : string) : string =
   let ast = Clang.Ast.parse_string source in
+  let items =
+    if
+      Str.string_match
+        (Str.regexp "#[ \\n\\t\\r]*include[ \\n\\t\\r]+<stdio\\.h>")
+        source 0
+    then
+      List.drop ast.desc.items
+        (List.length @@ (Clang.Ast.parse_string "#include <stdio.h>").desc.items)
+    else ast.desc.items
+  in
   Scope.get_string
     (List.fold ~init:Scope.empty
        ~f:(fun s item ->
