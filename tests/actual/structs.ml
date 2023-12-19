@@ -22,3 +22,17 @@ let addAb (str : myStructure) : int = Int.( + ) str.a str.b
 let multAb (str : myStructure) : int = Int.( * ) str.a str.b
 let subAb (str : myStructure) : int = Int.( - ) str.a str.b
 let divideAb (str : myStructure) : int = Int.( / ) str.a str.b
+
+let () =
+  let str : myStructure = { a = 1; b = 2; c = 'a'; d = 3. } in
+  let a : int = transformAB str in
+  let b : int = addAb str in
+  let c : int = multAb str in
+  let d : int = subAb str in
+  let e : int = divideAb str in
+  printf "a: %d\n" a;
+  printf "b: %d\n" b;
+  printf "c: %d\n" c;
+  printf "d: %d\n" d;
+  printf "e: %d\n" e;
+  exit 0

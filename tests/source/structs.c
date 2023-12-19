@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 struct myStructure {
     int a;
     int b;
@@ -29,3 +31,17 @@ int divideAb ( struct myStructure str) {
 };
 
 
+int main() {
+    struct myStructure str = {1, 2, 'a', 3.0};
+    int a = transformAB(str);
+    int b = addAb(str);
+    int c = multAb(str);
+    int d = subAb(str);
+    int e = divideAb(str);
+    printf("a: %d\n", a);
+    printf("b: %d\n", b);
+    printf("c: %d\n", c);
+    printf("d: %d\n", d);
+    printf("e: %d\n", e);
+    return 0;
+}
