@@ -53,6 +53,29 @@ let get_array_size (q : Ast.qual_type) : int =
   | ConstantArray { size; _ } -> size
   | _ -> failwith "should never occur"
 
+let is_array_subscript (q : Ast.expr) : bool =
+  match q.desc with
+  | ArraySubscript _ -> true
+  | _ -> false
+
+let get_array_name (q: Ast.expr): string = 
+  match q.desc with 
+  | ArraySubscript {base; _ } -> Collect_vars.get_expr_names base 
+  | _ -> failwith "shouldn't occur"
+
+let get_array_index (q: Ast.expr): string = 
+  match q.desc with 
+  | ArraySubscript {index; _} -> 
+    (match index.desc with 
+    | IntegerLiteral i -> (
+      match i with
+      | Int value ->
+        string_of_int value
+      | _ -> assert false)
+    | _ -> assert false )
+  | _ -> failwith "shouldn't occur"
+
+
 let parse_func_params (ast : Ast.function_decl) (vars : string VarMap.t)
     (types : (string * string) list VarMap.t) (num: int): Scope.t =
   let parse_param (acc : Scope.t) (p : Ast.parameter) : Scope.t =
@@ -97,7 +120,7 @@ let parse_struct_expr (ast : Ast.expr) : string =
       match tempStruct.desc with
       | DeclRef d -> (
           match d.name with IdentifierName name -> name | _ -> assert false)
-      | _ -> failwith "handle other cases later"
+      | _ -> failwith "should never occur - struct name"
     in
     let field = s.field in
     let fieldName =
@@ -105,8 +128,8 @@ let parse_struct_expr (ast : Ast.expr) : string =
       | FieldName f -> (
           match f.desc.name with
           | IdentifierName i -> i
-          | _ -> failwith "handle edge case later")
-      | _ -> failwith "handle other cases later"
+          | _ -> failwith "should never occur -field")
+      | _ -> failwith "should never occur -field2"
     in
     name ^ "." ^ fieldName ^ " "
   | _ -> failwith "handle other cases later"
@@ -123,7 +146,8 @@ let parse_op_type (expr : Ast.expr) (vars : string VarMap.t) : string =
     |> capitalize_first_letter
   | IntegerLiteral _ -> "Int"
   | FloatingLiteral _ -> "Float"
-  | _ -> failwith "handle other cases later"
+  (* | ArraySubscript _ ->  *)
+  | _ -> failwith "handle other cases later - optype"
 
 let parse_binary_operator (op_kind : Ast.binary_operator_kind)
     (var_type : string) : string =

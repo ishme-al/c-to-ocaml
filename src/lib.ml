@@ -187,7 +187,7 @@ and visit_decl (ast : Ast.decl) (vars : string VarMap.t)
         |> Scope.extend ~f:(visit_var_init var_init var_decl.var_name var_type)
         |> Scope.add_string " in\n"
       | None -> visit_empty_init var_decl vars types num )
-        (* ("", vars, types, num) |> Scope.add_var var_decl.var_name var_type) *)
+  (* ("", vars, types, num) |> Scope.add_var var_decl.var_name var_type) *)
   | RecordDecl struct_decl -> visit_struct_decl struct_decl vars types num
   | EmptyDecl -> ("", vars, types, num)
   | _ ->
@@ -196,22 +196,22 @@ and visit_decl (ast : Ast.decl) (vars : string VarMap.t)
 
 and visit_var_init (ast : Ast.expr) (var_name : string) (var_type : string)
     (vars : string VarMap.t) (types : (string * string) list VarMap.t) (num: int) : Scope.t
-    =
+  =
   match ast.desc with
   | InitList expr_list -> (
       match Scope.get_type types var_type with
       | Some struct_types ->
-          ("", vars, types, num) |> Scope.add_string "{ "
-          |> (fun s ->
-               List.fold ~init:s ~f:(fun s item ->
-                   let expr, (item_name, item_type) = item in
-                   s
-                   |> Scope.add_var (var_name ^ "." ^ item_name) item_type
-                   |> Scope.add_string @@ item_name ^ " = "
-                   |> Scope.extend ~f:(visit_expr expr)
-                   |> Scope.add_string "; ")
-               @@ List.zip_exn expr_list (List.rev struct_types))
-          |> Scope.add_string " }"
+        ("", vars, types, num) |> Scope.add_string "{ "
+        |> (fun s ->
+            List.fold ~init:s ~f:(fun s item ->
+                let expr, (item_name, item_type) = item in
+                s
+                |> Scope.add_var (var_name ^ "." ^ item_name) item_type
+                |> Scope.add_string @@ item_name ^ " = "
+                |> Scope.extend ~f:(visit_expr expr)
+                |> Scope.add_string "; ")
+            @@ List.zip_exn expr_list (List.rev struct_types))
+        |> Scope.add_string " }"
       | None -> (
           match List.length expr_list with
           | 0 -> ("[]", vars, types, num)
@@ -258,13 +258,21 @@ and visit_expr (ast : Ast.expr) (vars : string VarMap.t)
   | BinaryOperator { lhs; rhs; kind } -> (
       let op_type = parse_op_type lhs vars in
       match kind with
-      | Assign ->
-        ("", vars, types, num) |> Scope.add_string "let "
-        |> Scope.extend ~f:(visit_expr lhs)
-        |> Scope.add_string " = "
-        |> Scope.extend ~f:(visit_expr rhs)
-        |> Scope.add_string " in\n"
-      | _ ->
+      | Assign -> (
+          match (is_array_subscript lhs) with 
+          | true -> 
+            let name = get_array_name lhs in
+            let index = get_array_index lhs in
+            ("", vars, types, num) |> Scope.add_string @@ "let " ^ name ^ " = set_at_index " ^ name ^ " " ^ "index" ^ "( " 
+            |> Scope.extend ~f:(visit_expr rhs)
+            |> Scope.add_string ") in\n"
+          | false -> 
+            ("", vars, types, num) |> Scope.add_string "let "
+            |> Scope.extend ~f:(visit_expr lhs)
+            |> Scope.add_string " = "
+            |> Scope.extend ~f:(visit_expr rhs)
+            |> Scope.add_string " in\n" )
+      | _ -> 
         ("", vars, types, num)
         |> Scope.add_string (parse_binary_operator kind op_type ^ " ")
         |> Scope.extend ~f:(visit_expr lhs)
@@ -284,6 +292,10 @@ and visit_expr (ast : Ast.expr) (vars : string VarMap.t)
         |> Scope.extend ~f:(visit_expr operand)
         |> Scope.add_string " - 1 in\n"
       | _ -> failwith "Unrecognized Unary Operator")
+  | ArraySubscript {base;index; _} ->
+    let name = Collect_vars.get_expr_names base in
+    let stringIndex = get_array_index ast in
+    ("", vars, types, num) |> Scope.add_string @@ "List.nth_exn " ^ name ^ " " ^ stringIndex
   | DeclRef d -> (
       match d.name with
       | IdentifierName name -> ("", vars, types, num) |> Scope.add_string (name ^ " ")
@@ -304,8 +316,8 @@ and visit_expr (ast : Ast.expr) (vars : string VarMap.t)
            ^ " ")
       | _ -> assert false)
   | CharacterLiteral { value; _ } ->
-      ("", vars, types, num)
-      |> Scope.add_string ("'" ^ (String.of_char @@ Char.of_int_exn value) ^ "' ")
+    ("", vars, types, num)
+    |> Scope.add_string ("'" ^ (String.of_char @@ Char.of_int_exn value) ^ "' ")
   | Member s -> ("", vars, types, num) |> Scope.add_string @@ parse_struct_expr ast
   | Call { callee; args } -> (
       match List.length args with

@@ -26,6 +26,11 @@ val get_array_type : Clang.Ast.qual_type ->string
 
 val get_array_size : Clang.Ast.qual_type -> int
 
+val get_array_name : Clang.Ast.expr -> string 
+
+val get_array_index:  Clang.Ast.expr -> string 
+
+val is_array_subscript : Clang.Ast.expr -> bool 
 (*
 tree
    let tree = Clang.Ast.parse_file "tests/source/if.c";;
@@ -64,6 +69,15 @@ let getnthCompoundLists (decl: Clang.Stmt.t) n =
   let temp = match decl.desc with 
   | Compound statement_list -> statement_list in
   List.nth_exn temp n
+
+let getnthFromMain filename n = 
+  let tree = Clang.Ast.parse_file filename in
+  let declList = tree.desc.items in
+  let nthdecl = List.nth_exn declList 0 in
+  let main = match nthdecl.desc with 
+  | Function function_decl -> Option.value_exn function_decl.body in
+  getnthCompoundLists main n
+
 *)
 
 

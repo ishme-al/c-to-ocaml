@@ -20,6 +20,14 @@ let get_decl_names (ast : Ast.decl) : string =
   | _ ->
       Clang.Printer.decl Format.std_formatter ast;
       ""
+let get_expr_names (ast : Ast.expr): string = 
+  match ast.desc with
+  | DeclRef d ->(
+      match d.name with
+      | IdentifierName name -> name
+      | _ -> assert false )
+  | _ -> failwith "uh-oh in get_expr_name" 
+    
 
 let rec collect_from_stmt (stmt : Ast.stmt) (muts : string list)
     (inits : string list) : string list * string list =
@@ -115,3 +123,5 @@ let collect_mutated_vars (stmt : Ast.stmt) (muts_init : string list) :
     string list =
   let muts, _ = collect_from_stmt stmt muts_init [] in
   muts
+
+  

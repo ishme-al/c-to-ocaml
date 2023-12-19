@@ -1,10 +1,14 @@
 int main()
 {
-    int  arr[5];
-    int x = 0;
+    // int x = 3 +4 +5;
+    int arr[5];
 
+    arr[2] =0;
+    arr[3] =arr[2];
+    int x = 0;
     while( x < 0) {
         int z =1;
+        break;
         x++;
     }
     int y= 0;
