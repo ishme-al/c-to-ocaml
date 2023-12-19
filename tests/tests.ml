@@ -109,13 +109,18 @@ let run ctxt : unit =
                     |> String.of_char_list)))
            ~ctxt (output_folder ^ filename) [])
 
+(* delete dune file because it's a nuisance *)
+let delete_dune () : unit =
+  Sys_unix.remove @@ output_folder ^ "dune"
+
 let test ctxt =
-  Sys_unix.chdir "../../../tests";
+  Sys_unix.chdir "../../../tests/";
   clear ();
   transpile ();
   dune ();
   compile ctxt;
   run ctxt;
+  delete_dune ();
   Sys_unix.chdir "../_build/default/tests/" (* must come back for ounit2 *)
 
 let tests = "test" >::: [ "check" >:: test ]
