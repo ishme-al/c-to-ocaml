@@ -260,17 +260,17 @@ and visit_expr (ast : Ast.expr) (vars : string VarMap.t)
           | true -> 
             let name = get_array_name lhs in
             let index = get_array_index lhs in
-            ("", vars, types, num) |> Scope.add_string @@ "let " ^ name ^ " = set_at_index " ^ name ^ " " ^ "index" ^ "( " 
+            ("", vars, types) |> Scope.add_string @@ "let " ^ name ^ " = set_at_index " ^ name ^ " " ^ index ^ "( " 
             |> Scope.extend ~f:(visit_expr rhs)
             |> Scope.add_string ") in\n"
           | false -> 
-            ("", vars, types, num) |> Scope.add_string "let "
+            ("", vars, types) |> Scope.add_string "let "
             |> Scope.extend ~f:(visit_expr lhs)
             |> Scope.add_string " = "
             |> Scope.extend ~f:(visit_expr rhs)
             |> Scope.add_string " in\n" )
       | _ -> 
-        ("", vars, types, num)
+        ("", vars, types)
         |> Scope.add_string (parse_binary_operator kind op_type ^ " ")
         |> Scope.extend ~f:(visit_expr lhs)
         |> Scope.extend ~f:(visit_expr rhs))
@@ -292,7 +292,7 @@ and visit_expr (ast : Ast.expr) (vars : string VarMap.t)
   | ArraySubscript {base;index; _} ->
     let name = Collect_vars.get_expr_names base in
     let stringIndex = get_array_index ast in
-    ("", vars, types, num) |> Scope.add_string @@ "List.nth_exn " ^ name ^ " " ^ stringIndex
+    ("", vars, types) |> Scope.add_string @@ "(List.nth_exn " ^ name ^ " " ^ stringIndex ^ ") "
   | DeclRef d -> (
       match d.name with
       | IdentifierName name -> ("", vars, types) |> Scope.add_string (name ^ " ")

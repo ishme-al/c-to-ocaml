@@ -141,6 +141,9 @@ let parse_struct_expr (ast : Ast.expr) : string =
     name ^ "." ^ fieldName ^ " "
   | _ -> failwith "handle other cases later"
 
+  let remove_list_suffix (list_type: string):string = 
+    String.sub list_type ~pos:0 ~len:((String.length list_type) - 5)
+
 let parse_op_type (expr : Ast.expr) (vars : string VarMap.t) : string =
   match expr.desc with
   | DeclRef d -> (
@@ -153,8 +156,10 @@ let parse_op_type (expr : Ast.expr) (vars : string VarMap.t) : string =
     |> capitalize_first_letter
   | IntegerLiteral _ -> "Int"
   | FloatingLiteral _ -> "Float"
-  (* | ArraySubscript _ ->  *)
+  | ArraySubscript _ -> let name = get_array_name expr in
+      Scope.get_var vars name |> String.strip |> capitalize_first_letter |> remove_list_suffix
   | _ -> failwith "handle other cases later - optype"
+
 
 let parse_binary_operator (op_kind : Ast.binary_operator_kind)
     (var_type : string) : string =
