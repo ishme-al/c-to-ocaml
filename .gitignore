@@ -1,4 +1,5 @@
 _build/
 *.coverage
-tests/actual/
+tests/actual/*
 !tests/actual/*.ml
+!tests/actual/dune
