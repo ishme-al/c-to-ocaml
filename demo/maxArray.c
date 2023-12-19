@@ -1,9 +1,17 @@
-int getMax(int[] arr, int n) {
-    int temp = arr[0];
-    for(int x=0; x<n; x++) {
-        if(arr[x] > temp) {
-            temp = arr[x];
+int maxArray(int arr[20]) {
+    int max = arr[0];
+    for (int i = 1; i < 20; i = i + 1) {
+        if (arr[i] >= max) {
+            max = arr[i];
         }
     }
-    return temp;
+    return max;
+}
+
+int main() {
+    int arr[20] = {1, 2, 3, 4, 5, 6, 7, 8, 20, 10,
+                   11, 12, 13, 14, 15, 16, 17, 18, 19, 9};
+    int max = maxArray(arr);
+    printf("max: %d\n", max);
+    return 0;
 }
