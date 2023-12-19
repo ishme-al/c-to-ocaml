@@ -254,7 +254,6 @@ and visit_expr (ast : Ast.expr) (mutated_vars : string list)
     =
   match ast.desc with
   | BinaryOperator { lhs; rhs; kind } -> (
-      let op_type = parse_op_type lhs vars in
       match kind with
       | Assign -> (
           match is_array_subscript lhs with
@@ -272,7 +271,17 @@ and visit_expr (ast : Ast.expr) (mutated_vars : string list)
               |> Scope.add_string " = "
               |> Scope.extend ~f:(visit_expr rhs mutated_vars)
               |> Scope.add_string " in\n")
+      | _ when is_logical_operator kind ->
+          ("", vars, types)
+          |> Scope.add_string "("
+          |> Scope.extend ~f:(visit_expr lhs mutated_vars)
+          |> Scope.add_string ") "
+          |> Scope.add_string (parse_logical_operator kind ^ " ")
+          |> Scope.add_string "("
+          |> Scope.extend ~f:(visit_expr rhs mutated_vars)
+          |> Scope.add_string ")"
       | _ ->
+          let op_type = parse_op_type lhs vars in
           ("", vars, types)
           |> Scope.add_string (parse_binary_operator kind op_type ^ " ")
           |> Scope.extend ~f:(visit_expr lhs mutated_vars)
