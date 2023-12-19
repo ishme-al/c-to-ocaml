@@ -71,6 +71,7 @@ let return_code (filename : string) : Caml_unix.process_status option =
     | "if2" -> 0
     | "ifarrays" -> 0
     | "ifreturn" -> 0
+    | "incdec" -> 0
     | "int" -> 0
     | "functions" -> 0
     | "loops" -> 0
@@ -107,8 +108,7 @@ let run ctxt : unit =
            ~ctxt (output_folder ^ filename) [])
 
 (* delete dune file because it's a nuisance *)
-let delete_dune () : unit =
-  Sys_unix.remove @@ output_folder ^ "dune"
+let delete_dune () : unit = Sys_unix.remove @@ output_folder ^ "dune"
 
 let test ctxt =
   Sys_unix.chdir "../../../tests/";
