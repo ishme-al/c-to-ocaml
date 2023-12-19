@@ -1,5 +1,5 @@
 open Clang
-let getnthdecl filename:string n:int =
+let getnthdecl (filename:string) (n:int) =
   let tree = Clang.Ast.parse_file filename in
   let statementList = tree.desc.items in
   List.nth_exn statementList n
@@ -42,7 +42,8 @@ let getnthFromMain (filename: string) (n:int) =
   | Function function_decl -> Option.value_exn function_decl.body in
   getnthCompoundLists main n
 
-let viewAst (filename:string) = {
+let viewAst (filename:string) = 
   let tree = Clang.Ast.parse_file filename in
+  tree.desc.items
 
-}
+
