@@ -194,19 +194,6 @@ and visit_function_decl (ast : Ast.function_decl) (mutated_vars : string list)
            ~f:(visit_stmt (Option.value_exn ast.body) name mutated_vars)
   | _ -> failwith "failure in visit_function_decl"
 
-and visit_struct_decl (ast : Ast.record_decl) (vars : string VarMap.t)
-    (types : (string * string) list VarMap.t) : Scope.t =
-  ("", vars, types)
-  |> Scope.add_string @@ "type " ^ ast.name ^ " = { "
-  |> (fun s ->
-       List.fold ~init:s
-         ~f:(fun s item ->
-           Scope.aggregate s
-           @@ parse_struct_field item ast.name (Scope.get_vars s)
-                (Scope.get_types s))
-         ast.fields)
-  |> Scope.add_string " }"
-
 and visit_decl (ast : Ast.decl) (mutated_vars : string list)
     (vars : string VarMap.t) (types : (string * string) list VarMap.t) : Scope.t
     =
@@ -226,8 +213,7 @@ and visit_decl (ast : Ast.decl) (mutated_vars : string list)
                  (visit_var_init var_init var_decl.var_name var_type
                     mutated_vars)
           |> Scope.add_string " in\n"
-      | None -> visit_empty_init var_decl vars types
-      (* ("", vars, types) |> Scope.add_var var_decl.var_name var_type) *))
+      | None -> visit_empty_init var_decl vars types)
   | RecordDecl struct_decl -> visit_struct_decl struct_decl vars types
   | EmptyDecl -> ("", vars, types)
   | _ ->
@@ -267,21 +253,6 @@ and visit_var_init (ast : Ast.expr) (var_name : string) (var_type : string)
                      expr_list)
               |> Scope.add_string "]"))
   | _ -> visit_expr ast mutated_vars vars types
-
-and visit_empty_init (var_decl : Clang.Ast.var_decl_desc)
-    (vars : string VarMap.t) (types : (string * string) list VarMap.t) : Scope.t
-    =
-  let var_name = var_decl.var_name in
-  let var_type_name = parse_qual_type var_decl.var_type in
-  if is_array_type var_decl.var_type then
-    let n = string_of_int (get_array_size var_decl.var_type) in
-    ("", vars, types)
-    |> Scope.add_var var_name var_type_name
-    |> Scope.add_string @@ "let " ^ var_name ^ " : " ^ var_type_name
-       ^ " = List.init " ^ n ^ " ~f:(fun _ -> "
-       ^ parse_default_value (get_array_type var_decl.var_type)
-       ^ ") in \n"
-  else ("", vars, types) |> Scope.add_var var_name var_type_name
 
 and visit_expr (ast : Ast.expr) (mutated_vars : string list)
     (vars : string VarMap.t) (types : (string * string) list VarMap.t) : Scope.t

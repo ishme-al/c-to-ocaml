@@ -173,3 +173,31 @@ let parse_binary_operator (op_kind : Ast.binary_operator_kind)
     | _ -> failwith "handle others later"
   in
   var_type ^ ".( " ^ op ^ " )"
+
+let visit_empty_init (var_decl : Clang.Ast.var_decl_desc)
+    (vars : string VarMap.t) (types : (string * string) list VarMap.t) : Scope.t
+    =
+  let var_name = var_decl.var_name in
+  let var_type_name = parse_qual_type var_decl.var_type in
+  if is_array_type var_decl.var_type then
+    let n = string_of_int (get_array_size var_decl.var_type) in
+    ("", vars, types)
+    |> Scope.add_var var_name var_type_name
+    |> Scope.add_string @@ "let " ^ var_name ^ " : " ^ var_type_name
+       ^ " = List.init " ^ n ^ " ~f:(fun _ -> "
+       ^ parse_default_value (get_array_type var_decl.var_type)
+       ^ ") in \n"
+  else ("", vars, types) |> Scope.add_var var_name var_type_name
+
+let visit_struct_decl (ast : Ast.record_decl) (vars : string VarMap.t)
+    (types : (string * string) list VarMap.t) : Scope.t =
+  ("", vars, types)
+  |> Scope.add_string @@ "type " ^ ast.name ^ " = { "
+  |> (fun s ->
+       List.fold ~init:s
+         ~f:(fun s item ->
+           Scope.aggregate s
+           @@ parse_struct_field item ast.name (Scope.get_vars s)
+                (Scope.get_types s))
+         ast.fields)
+  |> Scope.add_string " }"
