@@ -79,7 +79,7 @@ let get_array_index (q: Ast.expr): string =
       | Int value ->
         string_of_int value
       | _ -> assert false)
-    | _ -> assert false )
+    | _ -> Collect_vars.get_expr_names index )
   | _ -> failwith "shouldn't occur"
 
 
