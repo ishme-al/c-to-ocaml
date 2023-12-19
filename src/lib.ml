@@ -106,7 +106,7 @@ and visit_for_stmt (ast : Ast.stmt) (func_name : string)
                 List.fold ~init:[]
                   ~f:(fun sArray s -> Collect_vars.get_decl_names s :: sArray)
                   decl_list
-            | _ -> failwith "shouldn't occur")
+            | _ -> assert false)
         | None -> []
       in
       let allVarNames =
