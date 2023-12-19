@@ -10,8 +10,7 @@ let expected_folder = "expected/"
 
 let clear () : unit =
   Sys_unix.readdir output_folder
-  |> Array.iter ~f:(fun filename ->
-         Sys_unix.remove @@ output_folder ^ filename)
+  |> Array.iter ~f:(fun filename -> Sys_unix.remove @@ output_folder ^ filename)
 
 let transpile () : unit =
   Sys_unix.readdir source_folder
@@ -35,13 +34,22 @@ let dune () : unit =
   in
   Out_channel.write_all (output_folder ^ "dune") ~data
 
-  (* ocamlfind ocamlopt -o int -linkpkg -package core int.ml *)
+(* ocamlfind ocamlopt -o int -linkpkg -package core int.ml *)
 let compile ctxt : unit =
-  Sys_unix.readdir output_folder |> Array.iter ~f:(fun filename ->
-    if String.(filename <> "dune") then
-    let exit_code = Option.some @@ Caml_unix.WEXITED 0 in
-    assert_command ?exit_code ~ctxt "ocamlfind" [ "ocamlopt"; "-o"; output_folder ^ String.drop_suffix filename 3; "-linkpkg"; "-package"; "core"; output_folder ^ filename]
-    )
+  Sys_unix.readdir output_folder
+  |> Array.iter ~f:(fun filename ->
+         if String.(filename <> "dune") then
+           let exit_code = Option.some @@ Caml_unix.WEXITED 0 in
+           assert_command ?exit_code ~ctxt "ocamlfind"
+             [
+               "ocamlopt";
+               "-o";
+               output_folder ^ String.drop_suffix filename 3;
+               "-linkpkg";
+               "-package";
+               "core";
+               output_folder ^ filename;
+             ])
 
 (* commented out:
   test.c
@@ -97,16 +105,15 @@ let expected (filename : string) : string =
 let run ctxt : unit =
   Sys_unix.readdir output_folder
   |> Array.iter ~f:(fun filename ->
-          if Result.is_ok @@ Core_unix.access "" [`Exec] then
+         if Result.is_ok @@ Core_unix.access "" [ `Exec ] then
            let path = "actual/" ^ String.drop_suffix filename 2 ^ "exe" in
            assert_command ?exit_code:(return_code filename)
              ?foutput:
-               ( Option.some (fun s ->
-                 assert_equal (expected filename)
-                 @@ (Sequence.of_seq s |> Sequence.to_list |> String.of_char_list ) 
-        ))
+               (Option.some (fun s ->
+                    assert_equal (expected filename)
+                    @@ (Sequence.of_seq s |> Sequence.to_list
+                      |> String.of_char_list)))
              ~ctxt path [])
-
 
 let test ctxt =
   Sys_unix.chdir "../../../tests";
