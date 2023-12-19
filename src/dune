@@ -1,7 +1,9 @@
 (library
  (name scope)
  (modules scope)
- (libraries core))
+ (libraries core)
+ (preprocess
+  (pps bisect_ppx)))
 
 (library
  (name find_rec)

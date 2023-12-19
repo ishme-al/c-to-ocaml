@@ -96,9 +96,9 @@ let return_code (filename : string) : Caml_unix.process_status option =
   in
   Option.some @@ Caml_unix.WEXITED rc
 
+(* careful about unix file newline terminations *)
 let expected (filename : string) : string =
   In_channel.read_all @@ expected_folder ^ filename ^ ".txt"
-  |> Fun.flip String.drop_suffix 1 (* file newline *)
 
 let run ctxt : unit =
   Sys_unix.readdir output_folder
@@ -108,7 +108,7 @@ let run ctxt : unit =
          assert_command ?exit_code:(return_code filename)
            ?foutput:
              (Option.some (fun s ->
-                  assert_equal ~printer:Fun.id (expected filename)
+                  assert_equal ~printer:Fun.id ~msg:filename (expected filename)
                   @@ (Sequence.of_seq s |> Sequence.to_list
                     |> String.of_char_list)))
            ~ctxt (output_folder ^ filename) [])
