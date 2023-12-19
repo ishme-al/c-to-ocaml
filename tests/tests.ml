@@ -53,10 +53,6 @@ let compile ctxt : unit =
              output_folder ^ filename;
            ])
 
-(* commented out:
-  error.c
-*)
-
 let return_code (filename : string) : Caml_unix.process_status option =
   let rc =
     match filename with
