@@ -33,7 +33,8 @@ val parse_op_type : Clang.Ast.expr -> string Scope.VarMap.t -> string
 
 (* return the string representation of a binary operator *)
 val parse_binary_operator : Clang.Ast.binary_operator_kind -> string -> string
-
+val is_logical_operator : Clang.Ast.binary_operator_kind -> bool
+val parse_logical_operator : Clang.Ast.binary_operator_kind -> string
 val is_array_type : Clang.Ast.qual_type -> bool
 val get_array_type : Clang.Ast.qual_type -> string
 val get_array_size : Clang.Ast.qual_type -> int
