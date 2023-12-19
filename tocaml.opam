@@ -5,7 +5,7 @@ description: "A longer description"
 maintainer: ["nparuch1@gmail.com"]
 authors: ["Aprina" "Ishmeal" "Nish"]
 depends: [
-  "dune" {>= "3.12"}
+  "dune" {>= "3.10"}
   "ounit2" {>= "2.2.7"}
   "core" {>= "0.16.2"}
   "clangml" {>= "4.8.0"}

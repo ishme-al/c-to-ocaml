@@ -249,76 +249,111 @@ and visit_var_init (ast : Ast.expr) (var_name : string) (var_type : string)
               |> Scope.add_string "]"))
   | _ -> visit_expr ast mutated_vars vars types
 
+and visit_binary_op_expr (lhs : Ast.expr) (rhs : Ast.expr)
+    (kind : Ast.binary_operator_kind) (mutated_vars : string list)
+    (vars : string VarMap.t) (types : (string * string) list VarMap.t) : Scope.t
+    =
+  match kind with
+  | Assign -> (
+      match is_array_subscript lhs with
+      | true ->
+          let name = get_array_name lhs in
+          let index = get_array_index lhs in
+          ("", vars, types)
+          |> Scope.add_string @@ "let " ^ name ^ " = set_at_index " ^ name ^ " "
+             ^ index ^ "( "
+          |> Scope.extend ~f:(visit_expr rhs mutated_vars)
+          |> Scope.add_string ") in\n"
+      | false ->
+          ("", vars, types) |> Scope.add_string "let "
+          |> Scope.extend ~f:(visit_expr lhs mutated_vars)
+          |> Scope.add_string " = "
+          |> Scope.extend ~f:(visit_expr rhs mutated_vars)
+          |> Scope.add_string " in\n")
+  | _ when is_logical_operator kind ->
+      ("", vars, types) |> Scope.add_string "("
+      |> Scope.extend ~f:(visit_expr lhs mutated_vars)
+      |> Scope.add_string ") "
+      |> Scope.add_string (parse_logical_operator kind ^ " ")
+      |> Scope.add_string "("
+      |> Scope.extend ~f:(visit_expr rhs mutated_vars)
+      |> Scope.add_string ")"
+  | _ ->
+      let op_type = parse_op_type lhs vars in
+      ("", vars, types)
+      |> Scope.add_string (parse_binary_operator kind op_type ^ " ")
+      |> Scope.extend ~f:(visit_expr lhs mutated_vars)
+      |> Scope.extend ~f:(visit_expr rhs mutated_vars)
+
+and visit_unary_op_expr (kind : Ast.unary_operator_kind) (operand : Ast.expr)
+    (mutated_vars : string list) (vars : string VarMap.t)
+    (types : (string * string) list VarMap.t) : Scope.t =
+  match kind with
+  | PostInc -> (
+      match is_array_subscript operand with
+      | true ->
+          let name = get_array_name operand in
+          let index = get_array_index operand in
+          ("", vars, types)
+          |> Scope.add_string @@ "let " ^ name ^ " = set_at_index " ^ name ^ " "
+             ^ index ^ " (( List.nth_exn " ^ name ^ " " ^ index
+             ^ " ) + 1 ) in\n"
+      | false ->
+          ("", vars, types) |> Scope.add_string "let "
+          |> Scope.extend ~f:(visit_expr operand mutated_vars)
+          |> Scope.add_string " = "
+          |> Scope.extend ~f:(visit_expr operand mutated_vars)
+          |> Scope.add_string " + 1 in\n")
+  | PostDec -> (
+      match is_array_subscript operand with
+      | true ->
+          let name = get_array_name operand in
+          let index = get_array_index operand in
+          ("", vars, types)
+          |> Scope.add_string @@ "let " ^ name ^ " = set_at_index " ^ name ^ " "
+             ^ index ^ " (( List.nth_exn " ^ name ^ " " ^ index
+             ^ " ) - 1 ) in\n"
+      | false ->
+          ("", vars, types) |> Scope.add_string "let "
+          |> Scope.extend ~f:(visit_expr operand mutated_vars)
+          |> Scope.add_string " = "
+          |> Scope.extend ~f:(visit_expr operand mutated_vars)
+          |> Scope.add_string " - 1 in\n")
+  | _ -> failwith "Unsupported Unary Operator"
+
+and visit_func_call (callee : Ast.expr) (args : Ast.expr list)
+    (mutated_vars : string list) (vars : string VarMap.t)
+    (types : (string * string) list VarMap.t) : Scope.t =
+  let callee_name =
+    String.strip @@ Scope.get_string
+    @@ visit_expr callee mutated_vars vars types
+  in
+  match List.length args with
+  | 0 ->
+      ("", vars, types)
+      |> Scope.extend ~f:(visit_expr callee mutated_vars)
+      |> Scope.add_string "();"
+  | _ ->
+      let end_str = if String.equal callee_name "printf" then ";" else "" in
+      ("", vars, types) |> Scope.add_string "("
+      |> Scope.extend ~f:(visit_expr callee mutated_vars)
+      |> (fun s ->
+           List.fold ~init:s
+             ~f:(fun s arg ->
+               s |> Scope.add_string "("
+               |> Scope.extend ~f:(visit_expr arg mutated_vars)
+               |> Scope.add_string ") ")
+             args)
+      |> Scope.add_string @@ ")" ^ end_str
+
 and visit_expr (ast : Ast.expr) (mutated_vars : string list)
     (vars : string VarMap.t) (types : (string * string) list VarMap.t) : Scope.t
     =
   match ast.desc with
-  | BinaryOperator { lhs; rhs; kind } -> (
-      match kind with
-      | Assign -> (
-          match is_array_subscript lhs with
-          | true ->
-              let name = get_array_name lhs in
-              let index = get_array_index lhs in
-              ("", vars, types)
-              |> Scope.add_string @@ "let " ^ name ^ " = set_at_index " ^ name
-                 ^ " " ^ index ^ "( "
-              |> Scope.extend ~f:(visit_expr rhs mutated_vars)
-              |> Scope.add_string ") in\n"
-          | false ->
-              ("", vars, types) |> Scope.add_string "let "
-              |> Scope.extend ~f:(visit_expr lhs mutated_vars)
-              |> Scope.add_string " = "
-              |> Scope.extend ~f:(visit_expr rhs mutated_vars)
-              |> Scope.add_string " in\n")
-      | _ when is_logical_operator kind ->
-          ("", vars, types)
-          |> Scope.add_string "("
-          |> Scope.extend ~f:(visit_expr lhs mutated_vars)
-          |> Scope.add_string ") "
-          |> Scope.add_string (parse_logical_operator kind ^ " ")
-          |> Scope.add_string "("
-          |> Scope.extend ~f:(visit_expr rhs mutated_vars)
-          |> Scope.add_string ")"
-      | _ ->
-          let op_type = parse_op_type lhs vars in
-          ("", vars, types)
-          |> Scope.add_string (parse_binary_operator kind op_type ^ " ")
-          |> Scope.extend ~f:(visit_expr lhs mutated_vars)
-          |> Scope.extend ~f:(visit_expr rhs mutated_vars))
-  | UnaryOperator { kind; operand; _ } -> (
-      match kind with
-      | PostInc -> (
-          match is_array_subscript operand with
-          | true ->
-              let name = get_array_name operand in
-              let index = get_array_index operand in
-              ("", vars, types)
-              |> Scope.add_string @@ "let " ^ name ^ " = set_at_index " ^ name
-                 ^ " " ^ index ^ " (( List.nth_exn " ^ name ^ " " ^ index
-                 ^ " ) + 1 ) in\n"
-          | false ->
-              ("", vars, types) |> Scope.add_string "let "
-              |> Scope.extend ~f:(visit_expr operand mutated_vars)
-              |> Scope.add_string " = "
-              |> Scope.extend ~f:(visit_expr operand mutated_vars)
-              |> Scope.add_string " + 1 in\n")
-      | PostDec -> (
-          match is_array_subscript operand with
-          | true ->
-              let name = get_array_name operand in
-              let index = get_array_index operand in
-              ("", vars, types)
-              |> Scope.add_string @@ "let " ^ name ^ " = set_at_index " ^ name
-                 ^ " " ^ index ^ " (( List.nth_exn " ^ name ^ " " ^ index
-                 ^ " ) - 1 ) in\n"
-          | false ->
-              ("", vars, types) |> Scope.add_string "let "
-              |> Scope.extend ~f:(visit_expr operand mutated_vars)
-              |> Scope.add_string " = "
-              |> Scope.extend ~f:(visit_expr operand mutated_vars)
-              |> Scope.add_string " - 1 in\n")
-      | _ -> failwith "Unsupported Unary Operator")
+  | BinaryOperator { lhs; rhs; kind } ->
+      visit_binary_op_expr lhs rhs kind mutated_vars vars types
+  | UnaryOperator { kind; operand; _ } ->
+      visit_unary_op_expr kind operand mutated_vars vars types
   | ArraySubscript { base; index; _ } ->
       let name = Collect_vars.get_expr_names base in
       let stringIndex = get_array_index ast in
@@ -350,28 +385,7 @@ and visit_expr (ast : Ast.expr) (mutated_vars : string list)
   | StringLiteral { bytes; _ } ->
       ("", vars, types) |> Scope.add_string ("\"" ^ bytes ^ "\" ")
   | Member s -> ("", vars, types) |> Scope.add_string @@ parse_struct_expr ast
-  | Call { callee; args } -> (
-      let callee_name =
-        String.strip @@ Scope.get_string
-        @@ visit_expr callee mutated_vars vars types
-      in
-      match List.length args with
-      | 0 ->
-          ("", vars, types)
-          |> Scope.extend ~f:(visit_expr callee mutated_vars)
-          |> Scope.add_string "();"
-      | _ ->
-          let end_str = if String.equal callee_name "printf" then ";" else "" in
-          ("", vars, types) |> Scope.add_string "("
-          |> Scope.extend ~f:(visit_expr callee mutated_vars)
-          |> (fun s ->
-               List.fold ~init:s
-                 ~f:(fun s arg ->
-                   s |> Scope.add_string "("
-                   |> Scope.extend ~f:(visit_expr arg mutated_vars)
-                   |> Scope.add_string ") ")
-                 args)
-          |> Scope.add_string @@ ")" ^ end_str)
+  | Call { callee; args } -> visit_func_call callee args mutated_vars vars types
   | _ -> failwith "Unsupported expression type"
 
 let parse (source : string) : string =
