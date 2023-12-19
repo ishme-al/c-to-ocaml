@@ -47,7 +47,7 @@ fswatch requires cygwin. Have not tested this install process.
 
 # project submission notes
 ## tests
-When `dune test` is run we compile all source files in `source` folder and transpile them to `actual`. Then each file is ran, comparing their output and return code with expected values in the code and in `expected` folder.
+When `dune test` is run we compile all source files in `source` folder and transpile them to `actual`. Then each file is ran, comparing their output and return code with expected values in the code and in `expected` folder. You can see the transpiled files in the `actual` folder.
 
 
 # todo
