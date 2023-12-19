@@ -6,15 +6,16 @@ open Scope
 [@@@ocaml.warning "-26"]
 [@@@ocaml.warning "-27"]
 
-let rec visit_stmt (ast : Ast.stmt) (func_name : string) (mutated_vars: string list)
-    (vars : string VarMap.t) (types : (string * string) list VarMap.t) : Scope.t
-    =
+let rec visit_stmt (ast : Ast.stmt) (func_name : string)
+    (mutated_vars : string list) (vars : string VarMap.t)
+    (types : (string * string) list VarMap.t) : Scope.t =
   match ast.desc with
   | Compound stmt_list ->
       List.fold ~init:("", vars, types)
         ~f:(fun s stmt ->
           Scope.aggregate s
-          @@ visit_stmt stmt func_name mutated_vars (Scope.get_vars s) (Scope.get_types s))
+          @@ visit_stmt stmt func_name mutated_vars (Scope.get_vars s)
+               (Scope.get_types s))
         stmt_list
   | Decl decl_list ->
       List.fold ~init:("", vars, types)
@@ -26,31 +27,38 @@ let rec visit_stmt (ast : Ast.stmt) (func_name : string) (mutated_vars: string l
   | If { cond; then_branch; else_branch; _ } ->
       ("", vars, types)
       |> Scope.new_level
-           ~f:(visit_if_stmt cond then_branch else_branch func_name mutated_vars)
+           ~f:
+             (visit_if_stmt cond then_branch else_branch func_name mutated_vars)
   | For _ ->
       ("", vars, types)
-      |> Scope.new_level ~f:(visit_for_stmt ast ("for_" ^ func_name) mutated_vars)
+      |> Scope.new_level
+           ~f:(visit_for_stmt ast ("for_" ^ func_name) mutated_vars)
   | While _ ->
       ("", vars, types)
-      |> Scope.new_level ~f:(visit_while_stmt ast ("while_" ^ func_name) mutated_vars)
+      |> Scope.new_level
+           ~f:(visit_while_stmt ast ("while_" ^ func_name) mutated_vars)
   | Return (Some ret_expr) -> (
       match func_name with
       | "main" ->
           ("", vars, types) |> Scope.add_string "exit("
           |> Scope.extend ~f:(visit_expr ret_expr mutated_vars)
           |> Scope.add_string ")\n"
-      | _ -> ("", vars, types) |> Scope.extend ~f:(visit_expr ret_expr mutated_vars))
-  | Break -> ("", vars, types) |> Scope.add_string (List.nth_exn mutated_vars ((List.length mutated_vars) - 1))
-
+      | _ ->
+          ("", vars, types)
+          |> Scope.extend ~f:(visit_expr ret_expr mutated_vars))
+  | Break ->
+      ("", vars, types)
+      |> Scope.add_string
+           (List.nth_exn mutated_vars (List.length mutated_vars - 1))
   | Return None -> ("", vars, types) |> Scope.add_string "()"
   | _ ->
       Clang.Printer.stmt Format.std_formatter ast;
       ("", vars, types)
 
 and visit_if_stmt (cond : Ast.expr) (then_branch : Ast.stmt)
-    (else_branch : Ast.stmt option) (func_name : string) (mutated_vars: string list)
-    (vars : string VarMap.t) (types : (string * string) list VarMap.t) : Scope.t
-    =
+    (else_branch : Ast.stmt option) (func_name : string)
+    (mutated_vars : string list) (vars : string VarMap.t)
+    (types : (string * string) list VarMap.t) : Scope.t =
   let mutated =
     Collect_vars.collect_mutated_vars then_branch [] |> fun l ->
     match else_branch with
@@ -82,15 +90,17 @@ and visit_if_stmt (cond : Ast.expr) (then_branch : Ast.stmt)
       |> Scope.extend ~f:else_str
       |> Scope.add_string @@ return_str ^ " in\n"
 
-and visit_for_stmt (ast : Ast.stmt) (func_name : string) (mutated_vars: string list)
-    (vars : string VarMap.t) (types : (string * string) list VarMap.t) : Scope.t
-    =
+and visit_for_stmt (ast : Ast.stmt) (func_name : string)
+    (mutated_vars : string list) (vars : string VarMap.t)
+    (types : (string * string) list VarMap.t) : Scope.t =
   match ast.desc with
   | For { cond; init; body; inc; _ } ->
       let mutated = Collect_vars.collect_mutated_vars ast [] in
-
-      let allMutated = String.concat ~sep:"," mutated in
-      let pass_on_mutated = " ( " ^ allMutated ^ " ) " in
+      let allMutated =
+        match List.length mutated with
+        | 0 -> "()"
+        | _ -> "(" ^ String.concat ~sep:"," mutated ^ ")"
+      in
       let varName =
         match init with
         | Some e -> (
@@ -102,57 +112,71 @@ and visit_for_stmt (ast : Ast.stmt) (func_name : string) (mutated_vars: string l
             | _ -> failwith "shouldn't occur")
         | None -> failwith "implement later"
       in
-      let allVarNames = String.concat ~sep:"," varName in
+      let allVarNames =
+        match List.length varName with
+        | 0 -> "()"
+        | _ -> "(" ^ String.concat ~sep:"," varName ^ ")"
+      in
       let start = ("", vars, types) in
       let initStart =
         match init with
-        | Some e -> Scope.extend start ~f:(visit_stmt e func_name (mutated_vars @ [pass_on_mutated]))
+        | Some e ->
+            Scope.extend start
+              ~f:(visit_stmt e func_name (mutated_vars @ [ allMutated ]))
         | None -> start
       in
       Scope.add_string
-        ("let rec " ^ func_name ^ " (" ^ allMutated ^ ") (" ^ allVarNames
-       ^ ") = if not @@ ")
+        ("let rec " ^ func_name ^ allVarNames ^ allMutated ^ " = match ")
         initStart
-      |> Scope.extend ~f:(visit_expr (Option.value_exn cond) (mutated_vars @ [pass_on_mutated]))
-      |> Scope.add_string @@ " then "
-      |> Scope.add_string @@ "(" ^ allMutated ^ ") \n"
-      |> Scope.add_string @@ " else "
-      |> Scope.extend ~f:(visit_stmt body func_name (mutated_vars @ [pass_on_mutated]))
-      |> Scope.extend ~f:(visit_stmt (Option.value_exn inc) func_name (mutated_vars @ [pass_on_mutated]))
-      |> Scope.add_string @@ func_name ^ " (" ^ allMutated ^ ") (" ^ allVarNames
-         ^ ") in \n"
-      |> Scope.add_string @@ "let (" ^ allMutated ^ ") = " ^ func_name ^ " ("
-         ^ allMutated ^ ") (" ^ allVarNames ^ ") in \n"
-  | _ -> failwith "never occurs"
+      |> Scope.extend
+           ~f:
+             (visit_expr (Option.value_exn cond)
+                (mutated_vars @ [ allMutated ]))
+      |> Scope.add_string @@ " with | false -> "
+      |> Scope.add_string @@ allMutated ^ " \n"
+      |> Scope.add_string @@ " | true -> ("
+      |> Scope.extend
+           ~f:(visit_stmt body func_name (mutated_vars @ [ allMutated ]))
+      |> Scope.extend
+           ~f:
+             (visit_stmt (Option.value_exn inc) func_name
+                (mutated_vars @ [ allMutated ]))
+      |> Scope.add_string @@ func_name ^ allVarNames ^ allMutated ^ " ) in \n"
+      |> Scope.add_string @@ "let " ^ allMutated ^ " = " ^ func_name
+         ^ allVarNames ^ allMutated ^ " in \n"
+  | _ -> assert false
 
-and visit_while_stmt (ast : Ast.stmt) (func_name : string) (mutated_vars: string list)
-    (vars : string VarMap.t) (types : (string * string) list VarMap.t) : Scope.t
-    =
+and visit_while_stmt (ast : Ast.stmt) (func_name : string)
+    (mutated_vars : string list) (vars : string VarMap.t)
+    (types : (string * string) list VarMap.t) : Scope.t =
   match ast.desc with
   | While { cond; body; _ } ->
       let mutated = Collect_vars.collect_mutated_vars ast [] in
-      let allMutated = String.concat ~sep:"," mutated in
+      let allMutated = "(" ^ String.concat ~sep:"," mutated ^ ")" in
       let pass_on_mutated = " ( " ^ allMutated ^ " ) " in
       ("", vars, types)
-      |> Scope.add_string @@ "let rec " ^ func_name ^ " (" ^ allMutated
-         ^ ") = if not @@ "
-      |> Scope.extend ~f:(visit_expr cond (mutated_vars @ [pass_on_mutated]))
-      |> Scope.add_string @@ " then "
-      |> Scope.add_string @@ "(" ^ allMutated ^ ") \n"
-      |> Scope.add_string @@ " else "
-      |> Scope.extend ~f:(visit_stmt body func_name (mutated_vars @ [pass_on_mutated]))
-      |> Scope.add_string @@ func_name ^ " (" ^ allMutated ^ ") in \n"
-      |> Scope.add_string @@ "let " ^ allMutated ^ " = " ^ func_name ^ " ("
-         ^ allMutated ^ ") in \n"
+      |> Scope.add_string @@ "let rec " ^ func_name ^ allMutated
+         ^ " = match  "
+      |> Scope.extend ~f:(visit_expr cond (mutated_vars @ [ allMutated ]))
+      |> Scope.add_string @@ " with | false -> "
+      |> Scope.add_string @@ allMutated ^ "\n"
+      |> Scope.add_string @@ " | true -> ( "
+      |> Scope.extend
+           ~f:(visit_stmt body func_name (mutated_vars @ [ allMutated ]))
+      |> Scope.add_string @@ func_name ^ allMutated ^ " ) in \n"
+      |> Scope.add_string @@ "let " ^ allMutated ^ " = " ^ func_name
+         ^ allMutated ^ " in \n"
   | _ -> failwith "never occurs"
 
-and visit_function_decl (ast : Ast.function_decl) (mutated_vars: string list) (vars : string VarMap.t)
-    (types : (string * string) list VarMap.t) : Scope.t =
+and visit_function_decl (ast : Ast.function_decl) (mutated_vars : string list)
+    (vars : string VarMap.t) (types : (string * string) list VarMap.t) : Scope.t
+    =
   match ast.name with
   | IdentifierName "main" ->
       ("", vars, types)
       |> Scope.add_string "let () =\n"
-      |> Scope.extend ~f:(visit_stmt (Option.value_exn ast.body) "main" mutated_vars)
+      |> Scope.extend
+           ~f:(visit_stmt (Option.value_exn ast.body) "main" mutated_vars)
   | IdentifierName name ->
       let let_str =
         match Find_rec.find_rec_func name (Option.value_exn ast.body) with
@@ -167,7 +191,8 @@ and visit_function_decl (ast : Ast.function_decl) (mutated_vars: string list) (v
       |> Scope.add_string (let_str ^ name ^ " ")
       |> Scope.extend ~f:(parse_func_params ast)
       |> Scope.add_string (return_str ^ " = \n")
-      |> Scope.extend ~f:(visit_stmt (Option.value_exn ast.body) name mutated_vars)
+      |> Scope.extend
+           ~f:(visit_stmt (Option.value_exn ast.body) name mutated_vars)
   | _ -> failwith "failure in visit_function_decl"
 
 and visit_struct_decl (ast : Ast.record_decl) (vars : string VarMap.t)
@@ -183,10 +208,12 @@ and visit_struct_decl (ast : Ast.record_decl) (vars : string VarMap.t)
          ast.fields)
   |> Scope.add_string " }"
 
-and visit_decl (ast : Ast.decl) (mutated_vars: string list) (vars : string VarMap.t)
-    (types : (string * string) list VarMap.t) : Scope.t =
+and visit_decl (ast : Ast.decl) (mutated_vars : string list)
+    (vars : string VarMap.t) (types : (string * string) list VarMap.t) : Scope.t
+    =
   match ast.desc with
-  | Function function_decl -> visit_function_decl function_decl mutated_vars vars types 
+  | Function function_decl ->
+      visit_function_decl function_decl mutated_vars vars types
   | Var var_decl -> (
       let var_type = parse_qual_type var_decl.var_type in
       match var_decl.var_init with
@@ -196,7 +223,9 @@ and visit_decl (ast : Ast.decl) (mutated_vars: string list) (vars : string VarMa
           |> Scope.add_string @@ "let " ^ var_decl.var_name ^ " : " ^ var_type
              ^ " = "
           |> Scope.extend
-               ~f:(visit_var_init var_init var_decl.var_name var_type mutated_vars)
+               ~f:
+                 (visit_var_init var_init var_decl.var_name var_type
+                    mutated_vars)
           |> Scope.add_string " in\n"
       | None -> visit_empty_init var_decl vars types
       (* ("", vars, types) |> Scope.add_var var_decl.var_name var_type) *))
@@ -206,9 +235,9 @@ and visit_decl (ast : Ast.decl) (mutated_vars: string list) (vars : string VarMa
       Clang.Printer.decl Format.std_formatter ast;
       ("", vars, types)
 
-and visit_var_init (ast : Ast.expr) (var_name : string) (var_type : string) (mutated_vars: string list)
-    (vars : string VarMap.t) (types : (string * string) list VarMap.t) : Scope.t
-    =
+and visit_var_init (ast : Ast.expr) (var_name : string) (var_type : string)
+    (mutated_vars : string list) (vars : string VarMap.t)
+    (types : (string * string) list VarMap.t) : Scope.t =
   match ast.desc with
   | InitList expr_list -> (
       match Scope.get_type types var_type with
@@ -233,11 +262,12 @@ and visit_var_init (ast : Ast.expr) (var_name : string) (var_type : string) (mut
                    List.fold ~init:s
                      ~f:(fun s item ->
                        Scope.aggregate s
-                       @@ visit_expr item mutated_vars (Scope.get_vars s) (Scope.get_types s)
+                       @@ visit_expr item mutated_vars (Scope.get_vars s)
+                            (Scope.get_types s)
                        |> Scope.add_string "; ")
                      expr_list)
               |> Scope.add_string "]"))
-  | _ -> visit_expr ast mutated_vars vars types 
+  | _ -> visit_expr ast mutated_vars vars types
 
 and visit_empty_init (var_decl : Clang.Ast.var_decl_desc)
     (vars : string VarMap.t) (types : (string * string) list VarMap.t) : Scope.t
@@ -254,31 +284,34 @@ and visit_empty_init (var_decl : Clang.Ast.var_decl_desc)
        ^ ") in \n"
   else ("", vars, types) |> Scope.add_var var_name var_type_name
 
-and visit_expr (ast : Ast.expr) (mutated_vars: string list) (vars : string VarMap.t)
-    (types : (string * string) list VarMap.t) : Scope.t =
+and visit_expr (ast : Ast.expr) (mutated_vars : string list)
+    (vars : string VarMap.t) (types : (string * string) list VarMap.t) : Scope.t
+    =
   match ast.desc with
   | BinaryOperator { lhs; rhs; kind } -> (
       let op_type = parse_op_type lhs vars in
       match kind with
       | Assign -> (
-          match (is_array_subscript lhs) with 
-          | true -> 
-            let name = get_array_name lhs in
-            let index = get_array_index lhs in
-            ("", vars, types) |> Scope.add_string @@ "let " ^ name ^ " = set_at_index " ^ name ^ " " ^ index ^ "( " 
-            |> Scope.extend ~f:(visit_expr rhs mutated_vars)
-            |> Scope.add_string ") in\n"
-          | false -> 
-            ("", vars, types) |> Scope.add_string "let "
-            |> Scope.extend ~f:(visit_expr lhs mutated_vars)
-            |> Scope.add_string " = "
-            |> Scope.extend ~f:(visit_expr rhs mutated_vars)
-            |> Scope.add_string " in\n" )
-      | _ -> 
-        ("", vars, types)
-        |> Scope.add_string (parse_binary_operator kind op_type ^ " ")
-        |> Scope.extend ~f:(visit_expr lhs mutated_vars)
-        |> Scope.extend ~f:(visit_expr rhs mutated_vars))
+          match is_array_subscript lhs with
+          | true ->
+              let name = get_array_name lhs in
+              let index = get_array_index lhs in
+              ("", vars, types)
+              |> Scope.add_string @@ "let " ^ name ^ " = set_at_index " ^ name
+                 ^ " " ^ index ^ "( "
+              |> Scope.extend ~f:(visit_expr rhs mutated_vars)
+              |> Scope.add_string ") in\n"
+          | false ->
+              ("", vars, types) |> Scope.add_string "let "
+              |> Scope.extend ~f:(visit_expr lhs mutated_vars)
+              |> Scope.add_string " = "
+              |> Scope.extend ~f:(visit_expr rhs mutated_vars)
+              |> Scope.add_string " in\n")
+      | _ ->
+          ("", vars, types)
+          |> Scope.add_string (parse_binary_operator kind op_type ^ " ")
+          |> Scope.extend ~f:(visit_expr lhs mutated_vars)
+          |> Scope.extend ~f:(visit_expr rhs mutated_vars))
   | UnaryOperator { kind; operand; _ } -> (
       match kind with
       | PostInc ->
@@ -294,10 +327,11 @@ and visit_expr (ast : Ast.expr) (mutated_vars: string list) (vars : string VarMa
           |> Scope.extend ~f:(visit_expr operand mutated_vars)
           |> Scope.add_string " - 1 in\n"
       | _ -> failwith "Unrecognized Unary Operator")
-  | ArraySubscript {base;index; _} ->
-    let name = Collect_vars.get_expr_names base in
-    let stringIndex = get_array_index ast in
-    ("", vars, types) |> Scope.add_string @@ "(List.nth_exn " ^ name ^ " " ^ stringIndex ^ ") "
+  | ArraySubscript { base; index; _ } ->
+      let name = Collect_vars.get_expr_names base in
+      let stringIndex = get_array_index ast in
+      ("", vars, types)
+      |> Scope.add_string @@ "(List.nth_exn " ^ name ^ " " ^ stringIndex ^ ") "
   | DeclRef d -> (
       match d.name with
       | IdentifierName name -> ("", vars, types) |> Scope.add_string (name ^ " ")
@@ -325,7 +359,10 @@ and visit_expr (ast : Ast.expr) (mutated_vars: string list) (vars : string VarMa
       ("", vars, types) |> Scope.add_string ("\"" ^ bytes ^ "\" ")
   | Member s -> ("", vars, types) |> Scope.add_string @@ parse_struct_expr ast
   | Call { callee; args } -> (
-      let callee_name = String.strip @@ Scope.get_string @@ visit_expr callee mutated_vars vars types in
+      let callee_name =
+        String.strip @@ Scope.get_string
+        @@ visit_expr callee mutated_vars vars types
+      in
       match List.length args with
       | 0 ->
           ("", vars, types)
@@ -339,7 +376,8 @@ and visit_expr (ast : Ast.expr) (mutated_vars: string list) (vars : string VarMa
                List.fold ~init:s
                  ~f:(fun s arg ->
                    Scope.aggregate s
-                   @@ visit_expr arg mutated_vars (Scope.get_vars s) (Scope.get_types s))
+                   @@ visit_expr arg mutated_vars (Scope.get_vars s)
+                        (Scope.get_types s))
                  args)
           |> Scope.add_string @@ ")" ^ end_str)
   | _ ->
