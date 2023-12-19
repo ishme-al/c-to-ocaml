@@ -1,4 +1,4 @@
-(lang dune 3.12)
+(lang dune 3.10)
  (generate_opam_files true)
  (authors "Aprina" "Ishmeal" "Nish")
  (maintainers "nparuch1@gmail.com")
