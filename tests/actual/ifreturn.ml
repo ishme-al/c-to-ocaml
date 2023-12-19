@@ -1,6 +1,7 @@
 [@@@ocaml.warning "-26"]
 [@@@ocaml.warning "-27"]
 [@@@ocaml.warning "-32"]
+[@@@ocaml.warning "-69"]
 
 open Core
 
