@@ -51,9 +51,7 @@ let rec visit_stmt (ast : Ast.stmt) (func_name : string)
       |> Scope.add_string
            (List.nth_exn mutated_vars (List.length mutated_vars - 1))
   | Return None -> ("", vars, types) |> Scope.add_string "()"
-  | _ ->
-      Clang.Printer.stmt Format.std_formatter ast;
-      ("", vars, types)
+  | _ -> failwith "Unsupported statement type"
 
 and visit_if_stmt (cond : Ast.expr) (then_branch : Ast.stmt)
     (else_branch : Ast.stmt option) (func_name : string)
@@ -72,7 +70,6 @@ and visit_if_stmt (cond : Ast.expr) (then_branch : Ast.stmt)
   in
   match List.length mutated with
   | 0 ->
-      (* TODO this might not work with some edge cases !!! *)
       ("", vars, types) |> Scope.add_string "if "
       |> Scope.extend ~f:(visit_expr cond mutated_vars)
       |> Scope.add_string " then "
@@ -165,7 +162,7 @@ and visit_while_stmt (ast : Ast.stmt) (func_name : string)
       |> Scope.add_string @@ func_name ^ allMutated ^ " ) in \n"
       |> Scope.add_string @@ "let " ^ allMutated ^ " = " ^ func_name
          ^ allMutated ^ " in \n"
-  | _ -> failwith "never occurs"
+  | _ -> assert false
 
 and visit_function_decl (ast : Ast.function_decl) (mutated_vars : string list)
     (vars : string VarMap.t) (types : (string * string) list VarMap.t) : Scope.t
@@ -192,7 +189,7 @@ and visit_function_decl (ast : Ast.function_decl) (mutated_vars : string list)
       |> Scope.add_string (return_str ^ " = \n")
       |> Scope.extend
            ~f:(visit_stmt (Option.value_exn ast.body) name mutated_vars)
-  | _ -> failwith "failure in visit_function_decl"
+  | _ -> assert false
 
 and visit_decl (ast : Ast.decl) (mutated_vars : string list)
     (vars : string VarMap.t) (types : (string * string) list VarMap.t) : Scope.t
@@ -216,9 +213,7 @@ and visit_decl (ast : Ast.decl) (mutated_vars : string list)
       | None -> visit_empty_init var_decl vars types)
   | RecordDecl struct_decl -> visit_struct_decl struct_decl vars types
   | EmptyDecl -> ("", vars, types)
-  | _ ->
-      Clang.Printer.decl Format.std_formatter ast;
-      ("", vars, types)
+  | _ -> failwith "Unsupported declaration type"
 
 and visit_var_init (ast : Ast.expr) (var_name : string) (var_type : string)
     (mutated_vars : string list) (vars : string VarMap.t)
@@ -314,7 +309,7 @@ and visit_expr (ast : Ast.expr) (mutated_vars : string list)
               |> Scope.add_string " = "
               |> Scope.extend ~f:(visit_expr operand mutated_vars)
               |> Scope.add_string " - 1 in\n")
-      | _ -> failwith "Unrecognized Unary Operator")
+      | _ -> failwith "Unsupported Unary Operator")
   | ArraySubscript { base; index; _ } ->
       let name = Collect_vars.get_expr_names base in
       let stringIndex = get_array_index ast in
@@ -368,9 +363,7 @@ and visit_expr (ast : Ast.expr) (mutated_vars : string list)
                    |> Scope.add_string ") ")
                  args)
           |> Scope.add_string @@ ")" ^ end_str)
-  | _ ->
-      Clang.Printer.expr Format.std_formatter ast;
-      ("", vars, types)
+  | _ -> failwith "Unsupported expression type"
 
 let parse (source : string) : string =
   let ast = Clang.Ast.parse_string source in
