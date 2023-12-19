@@ -10,7 +10,7 @@ let rec set_at_index (lst : 'a list) (index : int) (value : 'a) : 'a list =
   | hd :: tl ->
       if index = 0 then value :: tl else hd :: set_at_index tl (index - 1) value
 
-let notmain : int =
+let notmain () : int =
   let x : int = Int.( + ) 1 2 in
   let y : int = 2 in
   let a : int = 0 in

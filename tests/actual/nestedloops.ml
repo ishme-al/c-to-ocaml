@@ -10,7 +10,7 @@ let rec set_at_index (lst : 'a list) (index : int) (value : 'a) : 'a list =
   | hd :: tl ->
       if index = 0 then value :: tl else hd :: set_at_index tl (index - 1) value
 
-let foo : int =
+let foo () : int =
   let x : int = 0 in
   let i : int = 0 in
   let rec for_foo i x =
@@ -49,3 +49,8 @@ let foo : int =
   in
   let x = for_foo i x in
   x
+
+let () =
+  let x : int = foo () in
+  printf "%d" x;
+  exit 0

@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 int foo() {
   int x = 0;
   for (int i = 0; i < 5; i++) {
@@ -13,4 +15,10 @@ int foo() {
   }
 
   return x;
+}
+
+int main() {
+  int x = foo();
+  printf("%d", x);
+  return 0;
 }
