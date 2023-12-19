@@ -62,7 +62,7 @@ let is_array_subscript (q : Ast.expr) : bool =
 let get_array_name (q : Ast.expr) : string =
   match q.desc with
   | ArraySubscript { base; _ } -> Collect_vars.get_expr_names base
-  | _ -> failwith "shouldn't occur"
+  | _ -> assert false
 
 let get_array_index (q : Ast.expr) : string =
   match q.desc with
@@ -71,7 +71,7 @@ let get_array_index (q : Ast.expr) : string =
       | IntegerLiteral i -> (
           match i with Int value -> string_of_int value | _ -> assert false)
       | _ -> Collect_vars.get_expr_names index)
-  | _ -> failwith "shouldn't occur"
+  | _ -> assert false
 
 let parse_func_params (ast : Ast.function_decl) (vars : string VarMap.t)
     (types : (string * string) list VarMap.t) : Scope.t =
