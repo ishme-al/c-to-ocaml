@@ -1,31 +1,10 @@
 open Core
 open Fswatch
-open Ocamlformat_lib
 
 let read (filename : string) =
   match filename with
   | "-" -> In_channel.(input_all stdin)
   | _ -> In_channel.read_all filename
-
-let format (output : string) (source : string) : string option =
-  (* .translated.ml is a temporary file for showing errors if the output is stdout *)
-  let temp = String.equal "-" output in
-  let output = if temp then ".translated.ml" else output in
-  match
-    Conf.default
-    |> Translation_unit.parse_and_format Syntax.Use_file ~input_name:output
-         ~source
-  with
-  | Ok formatted -> Some formatted
-  | Error e ->
-      (* write broken translation out *)
-      Out_channel.write_all output ~data:source;
-      Translation_unit.Error.print Format.err_formatter e;
-      if temp then (
-        (* delete temp file *)
-        Sys_unix.remove ".translated.ml";
-        prerr_endline @@ ".translated.ml:\n" ^ source);
-      None
 
 let write (filename : string) (data : string) : unit =
   match filename with
@@ -35,7 +14,7 @@ let write (filename : string) (data : string) : unit =
   | _ -> Out_channel.write_all filename ~data
 
 let transpile (input : string) (output : string) =
-  input |> read |> Lib.parse |> format output
+  input |> read |> Lib.parse |> Lib.format output
   |> Option.iter ~f:(fun data -> write output data)
 
 let start input output =

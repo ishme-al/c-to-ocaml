@@ -28,7 +28,8 @@
 (library
  (name lib)
  (modules lib)
- (libraries core clangml collect_vars find_rec utils scope str)
+ (libraries core clangml collect_vars find_rec utils scope str ocamlformat-lib
+  core_unix.sys_unix)
  (preprocess
   (pps bisect_ppx)))
 
@@ -38,9 +39,7 @@
  (libraries
   lib
   core
-  core_unix.sys_unix
   core_unix.command_unix
-  ocamlformat-lib
   fswatch)
  (preprocess
   (pps ppx_let)))
