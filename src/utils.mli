@@ -26,6 +26,18 @@ val get_array_size : Clang.Ast.qual_type -> int
 val get_array_name : Clang.Ast.expr -> string
 val get_array_index : Clang.Ast.expr -> string
 val is_array_subscript : Clang.Ast.expr -> bool
+
+val visit_empty_init :
+  Clang.Ast.var_decl_desc ->
+  string Scope.VarMap.t ->
+  (string * string) list Scope.VarMap.t ->
+  Scope.Scope.t
+
+val visit_struct_decl :
+  Clang.Ast.record_decl ->
+  string Scope.VarMap.t ->
+  (string * string) list Scope.VarMap.t ->
+  Scope.Scope.t
 (*
 tree
    let tree = Clang.Ast.parse_file "tests/source/if.c";;
