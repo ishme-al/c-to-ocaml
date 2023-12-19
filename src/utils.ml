@@ -164,7 +164,7 @@ let parse_binary_operator (op_kind : Ast.binary_operator_kind)
     | GE -> ">="
     | EQ -> "="
     | NE -> "<>"
-    (* TODO | LAnd -> "&&"
+    (* | LAnd -> "&&"
     | LOr -> "||" *)
     | Assign -> "="
     | Mul -> "*"
@@ -172,6 +172,17 @@ let parse_binary_operator (op_kind : Ast.binary_operator_kind)
     | _ -> failwith "Unsupported binary operator"
   in
   var_type ^ ".( " ^ op ^ " )"
+
+let is_logical_operator (op_kind : Ast.binary_operator_kind) : bool =
+  match op_kind with
+  | LAnd | LOr -> true
+  | _ -> false
+
+let parse_logical_operator (op_kind : Ast.binary_operator_kind) : string =
+  match op_kind with
+  | LAnd -> "&&"
+  | LOr -> "||"
+  | _ -> failwith "Unsupported logical operator"
 
 let visit_empty_init (var_decl : Clang.Ast.var_decl_desc)
     (vars : string VarMap.t) (types : (string * string) list VarMap.t) : Scope.t

@@ -60,6 +60,7 @@ let compile ctxt : unit =
 let return_code (filename : string) : Caml_unix.process_status option =
   let rc =
     match filename with
+    | "andor" -> 0
     | "array" -> 0
     | "arrayfunc" -> 0
     | "char" -> 0
