@@ -14,8 +14,10 @@ let write (filename : string) (data : string) : unit =
   | _ -> Out_channel.write_all filename ~data
 
 let transpile (input : string) (output : string) =
-  input |> read |> Lib.parse |> Lib.format output
-  |> Option.iter ~f:(fun data -> write output data)
+  try 
+    input |> read |> Lib.parse |> Lib.format output
+    |> Option.iter ~f:(fun data -> write output data)
+  with e -> Printf.eprintf "%s\n" @@ Exn.to_string e; Out_channel.flush stderr
 
 let start input output =
   (* start -> transpile -> callback -> start *)

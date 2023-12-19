@@ -15,17 +15,6 @@ output-file: `-` for stdout
   [-help], -?                . print this help text and exit
 ```
 
-# issues
-* if the file does not end in `.c` it fails
-* tests
-* fix fswatch
-
-# libraries/dependencies
-- core: is good
-- clangml: convert C to AST
-- fswatch: watch filesystem
-- ocamlformat-lib: format output code
-
 ## ocamlformat-lib issues
 since this [fix](https://github.com/ocaml-ppx/ocamlformat/pull/2481) is not merged into opam (waiting for a release after 0.26.1), you will need to run
 ```bash
@@ -40,6 +29,7 @@ For now (until it gets [merged](https://github.com/ocaml/opam-repository/pull/24
 ```bash
 opam pin https://github.com/kandu/ocaml-fswatch.git
 ```
+also btw fswatch is very broken. Expect it to fail on your distribution.
 
 ### alpine, arch, debian, opensuse, oracle, ubuntu (and probably more) users
 there is a packaging [issue](https://github.com/ocaml/opam-repository/issues/22256) for `libfswatch`. Here is a fix that works (for debian/ubuntu derived? not sure about rest) (source: from the same issue)
@@ -53,17 +43,6 @@ then, prepend `LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libfswatch` to `dune build
 
 ### windows users
 fswatch requires cygwin. Have not tested this install process.
-
-# Design choices
-- Elegance over correctness
-- All ints are converted to pure ocaml `int`
-
-# Description - as of 
-Please see todo and things to implement sections for what is working so far.
-We are able to do most basic operations and comparisons for integers, and declare structs with character and float types (but cannot do character or float operations yet).
-See tests/source/ to see c source files and tests/transpiled to see the ocaml version of that code the transpiler generates.
-See tests/tests.ml that take in strings of c code and verify they match expected ocaml code (see the transpiled folder to sett a formatted version of that ocaml code).
-With if statements working so far, we have core logic for loops mostly there as well (though as loops.ml indicates, it does not work yet).
 
 # todo
 - [x] c file to AST
@@ -94,129 +73,9 @@ With if statements working so far, we have core logic for loops mostly there as 
 - [ ] enums
 - [ ] i/o (to stdin stdout only?)
 
-# things to consider
-these will likely not be implemented (only if we have time)
-- pointers
-- memory arithmetic
-- macros
-- unions
-- typedefs
-- casts
-- function pointers
-- inline
-- static
-- extern
-- preprocessor directives
-
-# sample functionality
-##### Example 1
-```C
-#include <stdio>
-
-int main() {
-  for (int i = 0; i < 5; i++) {
-    printf("Hello World");
-  }
-}
-```
-to
-```OCaml
-let () =
-  let rec main_aux (i : int) (stop : int -> bool) (inc : int -> int) : unit =
-    match stop i with
-    | true -> ()
-    | false -> (printf "Hello world";
-            main_aux (inc i) stop inc)
-  in
-  main_aux 0 (fun x -> x >= 5) (fun x -> x + 1);
-```
-
-##### Example 2
-```C
-int main() {
-  int a = 3;
-  int b = 4;
-  int c = a + b;
-  int d = c + 2;
-  return d;
-}
-```
-to
-```OCaml
-let () =
-  let a = 3 in
-  let b = 4 in
-  let c = a + b in
-  let d = c + 2 in
-  exit(d)  
-```
-
 ##### Example Execution
 if input file is called csample.c, and we want to output ocaml file called ocamloutput.ml, we call the command line as follows:
 ```
 tocaml.exe csample.c ocamloutput.ml
 ```
 There is an optional flag of `-w` so that ocamloutput.ml will continue to be regenerated after every change of csample.c
-
-##### Current Demo Functionality - as of Proposal
-Please look at lib.mli to see sample logic to parse through and translate c code.
-Note that only the parse function needs to be exposed in order translate the c code, the other functions are there just to demonstrate the translation workflow.
-Note, the visualize_ast and custom_print functions are in the ml and not mli file because those are purely to beign visualize the ast(to help while developing) and do not play a part in translation.
-
-To show that the clangml library works to parse through c files, we have 3 main outputs. In the argument output file, we print the name of the 
-first function given, and the function body. This is taken care of the "visualize_ast" function in lib.ml. Prinitng out the contents of the actualy function body is unimplemented still.
-Then, we print out "let functionname = " to the output file as well.
-Finally, to standard output, we use the ast to print out all statements within the file.
-For example, if we call 
-tocaml.exe test1.c testout1
-with test1.c looking like:
-```C
-int main() {
-  int a;
-  a = 2;
-	return 0;
-}
-```
-the testout1 file looks like:
-```txt
-Function_decl:main 
-Function_body:
-let main = 
-```
-
-with standard output looking like:
-```txt
-int x = 1 + 2;
-while (x < 3) {x --;}return 0;%   
-```
-
-Similarly, 
-with test1.c looking like:
-```C
-// #include <stdio.h>
-int notmain()
-{
-    int x = 1 + 2;
-
-    for(int a =0; a<10; a++) {
-        x = x + 1;
-    }
-    while( x< 3) {
-        x--;
-    }
-    return 0;
-}
-```
-the testout1 file looks like:
-```txt
-Function_decl:notmain 
-Function_body:
-let notmain = 
-```
-```txt
-with standard output like :
-int x = 1 + 2;
-for (int a = 0; a < 10; a ++) {x = x + 1;}while (x < 3) {x --;}return 0;%    
-```
-
-Feel free to look at the test1.c, test2.c, testout1, and testout2 to verify this.
