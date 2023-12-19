@@ -3,6 +3,7 @@ open OUnit2
 
 let output_folder = "../../../tests/actual"
 let source_folder = "../../../tests/source"
+let expected_folder = "../../../tests/expected"
 
 let clear () : unit =
   Sys_unix.readdir output_folder
@@ -12,14 +13,14 @@ let clear () : unit =
 let transpile () : unit =
   Sys_unix.readdir source_folder
   |> Array.iter ~f:(fun filename ->
-         let filename = String.drop_suffix filename 2 in
+         let filename = String.drop_suffix filename 1 in
          let data =
-           source_folder ^ "/" ^ filename ^ ".c"
+           source_folder ^ "/" ^ filename ^ "c"
            |> In_channel.read_all |> Lib.parse
-           |> Lib.format @@ filename ^ ".ml"
+           |> Lib.format @@ filename ^ "ml"
            |> Option.value_exn
          in
-         Out_channel.write_all ~data @@ output_folder ^ "/" ^ filename ^ ".ml")
+         Out_channel.write_all ~data @@ output_folder ^ "/" ^ filename ^ "ml")
 
 let dune () : unit =
   let data =
@@ -82,12 +83,23 @@ let return_code (filename : string) : Caml_unix.process_status option =
   in
   Option.some @@ Caml_unix.WEXITED rc
 
+let expected (filename : string) : char list =
+  let filename = String.drop_suffix filename 2 ^ "txt" in
+  In_channel.read_all @@ expected_folder ^ "/" ^ filename
+  |> Fun.flip String.drop_suffix 1
+  |> String.to_list
+
 let run ctxt : unit =
   Sys_unix.readdir output_folder
   |> Array.iter ~f:(fun filename ->
          if String.(filename <> "dune") then
            let path = "actual/" ^ String.drop_suffix filename 2 ^ "exe" in
-           assert_command ?exit_code:(return_code filename) ~ctxt path [])
+           assert_command ?exit_code:(return_code filename)
+             ?foutput:
+               ( Option.some @@ fun s ->
+                 assert_equal (expected filename)
+                 @@ (Sequence.of_seq s |> Sequence.to_list) )
+             ~ctxt path [])
 
 let test ctxt =
   clear ();
