@@ -1,12 +1,12 @@
-int foo(int a) {
-    if (a > 0) {
-        return foo(a - 1);
-    } else {
-        return 0;
-    }
-}
-
-int main() {
-    int x = foo(5);
-    return 0;
-}
+// int foo(int a) {
+//     if (a > 0) {
+//         return foo(a - 1);
+//     } else {
+//         return 0;
+//     }
+// }
+//
+// int main() {
+//     int x = foo(5);
+//     return 0;
+// }

@@ -1,23 +1,31 @@
-[@@@ocaml.warning "-26"] 
+[@@@ocaml.warning "-26"]
+[@@@ocaml.warning "-27"]
+[@@@ocaml.warning "-32"]
 
-  [@@@ocaml.warning "-27"]
+open Core
 
-  open Core 
+let rec set_at_index (lst : 'a list) (index : int) (value : 'a) : 'a list =
+  match lst with
+  | [] -> failwith "Index out of bounds"
+  | hd :: tl ->
+      if index = 0 then value :: tl else hd :: set_at_index tl (index - 1) value
 
-  let rec set_at_index (lst: 'a list) (index:int) (value: 'a) : 'a list =
-    match lst with
-    | [] -> failwith "Index out of bounds"
-    | hd :: tl ->
-      if index = 0 then
-        value :: tl
-      else
-        hd :: set_at_index tl (index - 1) value 
- let () =
-let x : int = 0  in
-let y : int = 0  in
-let  (y,x)  = if Int.( > ) x y  then let x  = Int.( + ) x 1  in
- (y,x)  else let  (y,x)  = if Int.( = ) x y  then let x  = Int.( + ) x y  in
- (y,x)  else let y  = Int.( + ) y 1  in
- (y,x)  in
- (y,x)  in
-exit(0 )
+let () =
+  let x : int = 0 in
+  let y : int = 0 in
+  let y, x =
+    if Int.( > ) x y then
+      let x = Int.( + ) x 1 in
+      (y, x)
+    else
+      let y, x =
+        if Int.( = ) x y then
+          let x = Int.( + ) x y in
+          (y, x)
+        else
+          let y = Int.( + ) y 1 in
+          (y, x)
+      in
+      (y, x)
+  in
+  exit 0

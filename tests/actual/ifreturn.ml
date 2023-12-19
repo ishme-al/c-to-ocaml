@@ -1,5 +1,6 @@
 [@@@ocaml.warning "-26"]
 [@@@ocaml.warning "-27"]
+[@@@ocaml.warning "-32"]
 
 open Core
 
@@ -9,6 +10,13 @@ let rec set_at_index (lst : 'a list) (index : int) (value : 'a) : 'a list =
   | hd :: tl ->
       if index = 0 then value :: tl else hd :: set_at_index tl (index - 1) value
 
+let foo (a : int) : int =
+  let b : int = 3 in
+  if Int.( > ) a 0 then
+    let b = Int.( + ) b a in
+    b
+  else Int.( * ) b 2
+
 let () =
-  let a = 2 in
+  let x : int = foo 5 in
   exit 0
