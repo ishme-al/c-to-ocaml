@@ -168,8 +168,13 @@ let parse_binary_operator (op_kind : Ast.binary_operator_kind)
     | Add -> "+"
     | Sub -> "-"
     | LT -> "<"
+    | LE -> "<="
     | GT -> ">"
+    | GE -> ">="
     | EQ -> "="
+    | NE -> "<>"
+    (* TODO | LAnd -> "&&"
+    | LOr -> "||" *)
     | Assign -> "="
     | Mul -> "*"
     | Div -> "/"
