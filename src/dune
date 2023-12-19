@@ -3,12 +3,7 @@
  (modules scope)
  (libraries core))
 
-(library
- (name utils)
- (modules utils)
- (libraries core clangml scope)
- (preprocess
-  (pps bisect_ppx)))
+
 
 (library
  (name find_rec)
@@ -21,6 +16,13 @@
  (name collect_vars)
  (modules collect_vars)
  (libraries core clangml)
+ (preprocess
+  (pps bisect_ppx)))
+
+  (library
+ (name utils)
+ (modules utils)
+ (libraries core clangml scope collect_vars)
  (preprocess
   (pps bisect_ppx)))
 

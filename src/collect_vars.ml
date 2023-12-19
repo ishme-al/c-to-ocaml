@@ -82,6 +82,7 @@ let rec collect_from_stmt (stmt : Ast.stmt) (muts : string list)
       (* if any variable is initialized, it is not mutated*)
         (* if a variable is in the condition, if it is declared in scope, not needed as intput/output, if it is o*)
     )
+  | Break -> (muts, inits)
   | Return _ -> ([], inits)
   | _ -> failwith "uhoh in collect_from_stmt"
 
