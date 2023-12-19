@@ -392,9 +392,9 @@ and visit_expr (ast : Ast.expr) (mutated_vars : string list)
           |> (fun s ->
                List.fold ~init:s
                  ~f:(fun s arg ->
-                   Scope.aggregate s
-                   @@ visit_expr arg mutated_vars (Scope.get_vars s)
-                        (Scope.get_types s))
+                   s |> Scope.add_string "("
+                   |> Scope.extend ~f:(visit_expr arg mutated_vars)
+                   |> Scope.add_string ") ")
                  args)
           |> Scope.add_string @@ ")" ^ end_str)
   | _ ->
