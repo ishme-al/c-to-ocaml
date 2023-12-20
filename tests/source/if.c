@@ -12,8 +12,8 @@ int main()
         x = y;
      }
 
-     if(x == y) {
-        x = x + y  ;   
+     if(x != y) {
+        x = x + y;   
     }
     return 0;
 }

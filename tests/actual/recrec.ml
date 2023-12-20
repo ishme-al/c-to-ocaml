@@ -11,22 +11,10 @@ let rec set_at_index (lst : 'a list) (index : int) (value : 'a) : 'a list =
   | hd :: tl ->
       if index = 0 then value :: tl else hd :: set_at_index tl (index - 1) value
 
+let rec recursive (n : int) : int =
+  printf "recursive(%d)\n" n;
+  if Int.( > ) n 1 then recursive (recursive (Int.( - ) n 1)) else n
+
 let () =
-  let x : int = 0 in
-  let y : int = 0 in
-  let y, x =
-    if Int.( >= ) x y then
-      let x = Int.( + ) x 1 in
-      (y, x)
-    else
-      let y, x =
-        if Int.( = ) x y then
-          let x = Int.( + ) x y in
-          (y, x)
-        else
-          let y = Int.( + ) y 1 in
-          (y, x)
-      in
-      (y, x)
-  in
+  let x : int = recursive 5 in
   exit 0
