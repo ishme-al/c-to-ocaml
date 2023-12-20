@@ -5,10 +5,6 @@
  (package
   (name tocaml)
   (synopsis "Transpile c to ocaml code")
-
-  (allow_empty)
-  
-  (description "A longer description")
   (depends
    (ounit2 (>= 2.2.7))
    (core (>= 0.16.2))

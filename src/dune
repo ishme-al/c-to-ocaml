@@ -44,6 +44,7 @@
 
 (executable
  (name tocaml)
+ (public_name tocaml)
  (modules tocaml)
  (libraries lib core core_unix.command_unix fswatch)
  (preprocess
