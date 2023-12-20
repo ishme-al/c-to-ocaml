@@ -6,6 +6,7 @@ open Scope
 [@@@ocaml.warning "-26"]
 [@@@ocaml.warning "-27"]
 
+(* visits a statement and outputs a parse for it. This includes combination of statements, for loops, if statements, while loopps, and more*)
 let rec visit_stmt (ast : Ast.stmt) (func_name : string)
     (mutated_vars : string list) (vars : string VarMap.t)
     (types : (string * string) list VarMap.t) : Scope.t =
@@ -53,6 +54,7 @@ let rec visit_stmt (ast : Ast.stmt) (func_name : string)
   | Return None -> ("", vars, types) |> Scope.add_string "()"
   | _ -> failwith "Unsupported statement type"
 
+(* visits an if statment  ast and adds the ocaml translation back *)
 and visit_if_stmt (cond : Ast.expr) (then_branch : Ast.stmt)
     (else_branch : Ast.stmt option) (func_name : string)
     (mutated_vars : string list) (vars : string VarMap.t)
@@ -87,6 +89,7 @@ and visit_if_stmt (cond : Ast.expr) (then_branch : Ast.stmt)
       |> Scope.extend ~f:else_str
       |> Scope.add_string @@ return_str ^ " in\n"
 
+(* visits the for statement ast and adds the translated ocaml loop *)
 and visit_for_stmt (ast : Ast.stmt) (func_name : string)
     (mutated_vars : string list) (vars : string VarMap.t)
     (types : (string * string) list VarMap.t) : Scope.t =
@@ -143,6 +146,7 @@ and visit_for_stmt (ast : Ast.stmt) (func_name : string)
          ^ allVarNames ^ allMutated ^ " in \n"
   | _ -> assert false
 
+(* visits the while statement ast and adds the translated ocaml loop *)
 and visit_while_stmt (ast : Ast.stmt) (func_name : string)
     (mutated_vars : string list) (vars : string VarMap.t)
     (types : (string * string) list VarMap.t) : Scope.t =
@@ -164,6 +168,7 @@ and visit_while_stmt (ast : Ast.stmt) (func_name : string)
          ^ allMutated ^ " in \n"
   | _ -> assert false
 
+(* visits the function ast, and recursively every statement with in it, and adds the translated ocaml loop *)
 and visit_function_decl (ast : Ast.function_decl) (mutated_vars : string list)
     (vars : string VarMap.t) (types : (string * string) list VarMap.t) : Scope.t
     =
@@ -191,6 +196,7 @@ and visit_function_decl (ast : Ast.function_decl) (mutated_vars : string list)
            ~f:(visit_stmt (Option.value_exn ast.body) name mutated_vars)
   | _ -> assert false
 
+(* visits the declaration  ast of a variable, function, or struct and translated it*)
 and visit_decl (ast : Ast.decl) (mutated_vars : string list)
     (vars : string VarMap.t) (types : (string * string) list VarMap.t) : Scope.t
     =
@@ -215,6 +221,7 @@ and visit_decl (ast : Ast.decl) (mutated_vars : string list)
   | EmptyDecl -> ("", vars, types)
   | _ -> failwith "Unsupported declaration type"
 
+(* if variable is initialized to a value when declared, visits the corresponding ast and translates it, namely arrays here (see initlist)*)
 and visit_var_init (ast : Ast.expr) (var_name : string) (var_type : string)
     (mutated_vars : string list) (vars : string VarMap.t)
     (types : (string * string) list VarMap.t) : Scope.t =
@@ -249,6 +256,7 @@ and visit_var_init (ast : Ast.expr) (var_name : string) (var_type : string)
               |> Scope.add_string "]"))
   | _ -> visit_expr ast mutated_vars vars types
 
+(* translated an expression with a binary operattor, like equals (see Assign), +, - etc*)
 and visit_binary_op_expr (lhs : Ast.expr) (rhs : Ast.expr)
     (kind : Ast.binary_operator_kind) (mutated_vars : string list)
     (vars : string VarMap.t) (types : (string * string) list VarMap.t) : Scope.t
@@ -285,6 +293,7 @@ and visit_binary_op_expr (lhs : Ast.expr) (rhs : Ast.expr)
       |> Scope.extend ~f:(visit_expr lhs mutated_vars)
       |> Scope.extend ~f:(visit_expr rhs mutated_vars)
 
+(* adds translation of any unary operation, such as post++ and post-- *)
 and visit_unary_op_expr (kind : Ast.unary_operator_kind) (operand : Ast.expr)
     (mutated_vars : string list) (vars : string VarMap.t)
     (types : (string * string) list VarMap.t) : Scope.t =
@@ -292,6 +301,7 @@ and visit_unary_op_expr (kind : Ast.unary_operator_kind) (operand : Ast.expr)
   | PostInc -> (
       match is_array_subscript operand with
       | true ->
+          (* sepcial case for array)*)
           let name = get_array_name operand in
           let index = get_array_index operand in
           ("", vars, types)
@@ -307,6 +317,7 @@ and visit_unary_op_expr (kind : Ast.unary_operator_kind) (operand : Ast.expr)
   | PostDec -> (
       match is_array_subscript operand with
       | true ->
+        (* special case for array)*)
           let name = get_array_name operand in
           let index = get_array_index operand in
           ("", vars, types)
@@ -321,6 +332,7 @@ and visit_unary_op_expr (kind : Ast.unary_operator_kind) (operand : Ast.expr)
           |> Scope.add_string " - 1 in\n")
   | _ -> failwith "Unsupported Unary Operator"
 
+(* translates a custom function that was called*)
 and visit_func_call (callee : Ast.expr) (args : Ast.expr list)
     (mutated_vars : string list) (vars : string VarMap.t)
     (types : (string * string) list VarMap.t) : Scope.t =
@@ -346,6 +358,7 @@ and visit_func_call (callee : Ast.expr) (args : Ast.expr list)
              args)
       |> Scope.add_string @@ ")" ^ end_str
 
+(* translates any expression, such as a unary operator, an array + indexing, variable expression, structs, and more*)
 and visit_expr (ast : Ast.expr) (mutated_vars : string list)
     (vars : string VarMap.t) (types : (string * string) list VarMap.t) : Scope.t
     =
@@ -388,6 +401,7 @@ and visit_expr (ast : Ast.expr) (mutated_vars : string list)
   | Call { callee; args } -> visit_func_call callee args mutated_vars vars types
   | _ -> failwith "Unsupported expression type"
 
+(* parses through the given string, representing the c file*)
 let parse (source : string) : string =
   let ast = Clang.Ast.parse_string source in
   let items =
@@ -410,6 +424,7 @@ let parse (source : string) : string =
 (* do not move this. its names conflicts with clangml *)
 open Ocamlformat_lib
 
+(* formats the resulting ocaml transpiled code using ocaml formatter.*)
 let format (output : string) (source : string) : string option =
   (* .translated.ml is a temporary file for showing errors if the output is stdout *)
   let temp = String.equal "-" output in

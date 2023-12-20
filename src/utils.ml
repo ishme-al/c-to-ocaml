@@ -4,6 +4,7 @@ open Scope
 
 [@@@warning "-27"]
 
+(* takes a string and capitalizes its first letter, used to turn int data data into Int Module *)
 let capitalize_first_letter str =
   match String.length str with
   | 0 -> str (* Empty string, nothing to capitalize *)
@@ -36,7 +37,7 @@ let rec parse_qual_type (q : Ast.qual_type) : string =
           | _ -> assert false))
   | ConstantArray { element; _ } -> parse_qual_type element ^ " list"
   | _ -> failwith "Unsupported QualType"
-
+(*gets defaults value of our three supported types. *)
 let parse_default_value (val_type : string) : string =
   match val_type with
   | "int" -> "0"
@@ -44,6 +45,7 @@ let parse_default_value (val_type : string) : string =
   | "char" -> "' '"
   | _ -> failwith @@ "Unsupported type " ^ val_type ^ ": unknown default value"
 
+(* returns true if is an array*)
 let is_array_type (q : Ast.qual_type) : bool =
   match q.desc with ConstantArray { element; _ } -> true | _ -> false
 

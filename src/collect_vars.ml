@@ -4,6 +4,7 @@ open Core
 
 [@@@ocaml.warning "-26"]
 
+(* get names of a variable during declaration, ie : variables, structs, functions*)
 let get_decl_names (ast : Ast.decl) : string =
   match ast.desc with
   | Function function_decl -> (
@@ -16,6 +17,7 @@ let get_decl_names (ast : Ast.decl) : string =
   | _ ->
     Clang.Printer.decl Format.std_formatter ast;
     ""
+(* get names of variables in an expression, ie: variables, structs, field*)
 let get_expr_names (ast : Ast.expr): string = 
   match ast.desc with
   | DeclRef d ->(
@@ -43,7 +45,7 @@ let get_expr_names (ast : Ast.expr): string =
     name ^ "." ^ fieldName
   | _ -> failwith "Error getting expression name" 
 
-
+(* get list of all variables mutated during this statement, ie an if statement, for loop, while loop, and nested statements inside*)
 let rec collect_from_stmt (stmt : Ast.stmt) (muts : string list)
     (inits : string list) : string list * string list =
   match stmt.desc with
@@ -101,12 +103,14 @@ let rec collect_from_stmt (stmt : Ast.stmt) (muts : string list)
   | Return _ -> ([], inits)
   | _ -> failwith "Erorr determining mutated variables in statement"
 
+  (* adds any variables mutated during this declration*)
 and collect_from_decl (decl : Ast.decl) (muts : string list)
     (inits : string list) : string list * string list =
   match decl.desc with
   | Var var_decl -> (muts, var_decl.var_name :: inits)
   | _ -> failwith "Error determining mutated variables in declaration"
-
+ 
+  (* adds any variables mutated during this expression, such as arrays and variables*)
 and collect_from_expr (expr : Ast.expr) (muts : string list)
     (inits : string list) : string list * string list =
   match expr.desc with
@@ -144,6 +148,7 @@ and collect_from_expr (expr : Ast.expr) (muts : string list)
   | IntegerLiteral _ -> (muts, inits)
   | _ -> failwith "Error determining mutated variables in expression"
 
+  (* let given an ast statement, returns a string list of all variables that were mutated during them*)
 let collect_mutated_vars (stmt : Ast.stmt) (muts_init : string list) :
   string list =
   let muts, _ = collect_from_stmt stmt muts_init [] in

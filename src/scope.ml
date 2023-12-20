@@ -3,7 +3,7 @@ module VarMap = Map.Make (String)
 
 module Scope = struct
   type t = string * string VarMap.t * (string * string) list VarMap.t
-
+  (* boiler plate code for every function*)
   let empty : t =
     ( "[@@@warning \"-26\"] \n\n\
       \  [@@@warning \"-27\"]\n\n\

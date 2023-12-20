@@ -1,5 +1,6 @@
 open Clang
 
+(* checks if this function is called in the statement, indicating it is a recursive function*)
 let rec find_in_stmt (func_name : string) (ast : Ast.stmt) : bool =
   match ast.desc with
   | Compound stmt_list -> List.exists (find_in_stmt func_name) stmt_list
@@ -15,10 +16,13 @@ let rec find_in_stmt (func_name : string) (ast : Ast.stmt) : bool =
   | Return (Some ret_expr) -> find_in_expr func_name ret_expr
   | _ -> false
 
+  (* checks if this function is called in the declarationt, indicating it is a recursive function*)
 and find_in_decl (func_name : string) (ast : Ast.decl) : bool =
   match ast.desc with
   | Var { var_init = Some init_expr; _ } -> find_in_expr func_name init_expr
   | _ -> false
+
+(* checks if this function is called in the expression, indicating it is a recursive function*)
 
 and find_in_expr (func_name : string) (ast : Ast.expr) : bool =
   match ast.desc with
@@ -31,5 +35,6 @@ and find_in_expr (func_name : string) (ast : Ast.expr) : bool =
       | _ -> List.exists (find_in_expr func_name) args)
   | _ -> false
 
+(* checks if this function is called in the statement, indicating it is a recursive function, and parses through nodes of that statements Ast*)
 let find_rec_func (func_name : string) (ast : Ast.stmt) : bool =
   find_in_stmt func_name ast
