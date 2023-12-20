@@ -19,4 +19,5 @@ let () =
   let b = set_at_index b 2 1 in
   let a : int list = List.init 3 ~f:(fun _ -> 0) in
   let d : float list = List.init 3 ~f:(fun _ -> 0.0) in
+  let e : char list = List.init 6 ~f:(fun _ -> ' ') in
   exit 0

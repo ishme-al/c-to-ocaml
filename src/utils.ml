@@ -19,13 +19,12 @@ let rec parse_qual_type (q : Ast.qual_type) : string =
   match q.desc with
   | BuiltinType builtintype -> (
       match builtintype with
-      | Long | Int -> "int"
-      | UChar -> "char"
-      | Char_S -> "char"
-      | Float -> "float"
+      | Long | ULong | Short | UShort | Int | UInt | LongLong | ULongLong ->
+          "int"
+      | UChar | Char_S -> "char"
+      | Float | Double | LongDouble -> "float"
       | Void -> "unit"
       | _ -> failwith "Unsupported BuiltInType")
-  (* will refactor into two helpers later, but focused on functionality instead of digging through documentation to find appropriate record equivalent for now*)
   | Elaborated struct_type -> (
       match struct_type.named_type with
       | { desc = record; _ } -> (
@@ -123,9 +122,7 @@ let parse_struct_expr (ast : Ast.expr) : string =
       let fieldName =
         match field with
         | FieldName f -> (
-            match f.desc.name with
-            | IdentifierName i -> i
-            | _ -> assert false)
+            match f.desc.name with IdentifierName i -> i | _ -> assert false)
         | _ -> assert false
       in
       name ^ "." ^ fieldName ^ " "
@@ -164,9 +161,6 @@ let parse_binary_operator (op_kind : Ast.binary_operator_kind)
     | GE -> ">="
     | EQ -> "="
     | NE -> "<>"
-    (* | LAnd -> "&&"
-    | LOr -> "||" *)
-    | Assign -> "="
     | Mul -> "*"
     | Div -> "/"
     | _ -> failwith "Unsupported binary operator"
@@ -174,9 +168,7 @@ let parse_binary_operator (op_kind : Ast.binary_operator_kind)
   var_type ^ ".( " ^ op ^ " )"
 
 let is_logical_operator (op_kind : Ast.binary_operator_kind) : bool =
-  match op_kind with
-  | LAnd | LOr -> true
-  | _ -> false
+  match op_kind with LAnd | LOr -> true | _ -> false
 
 let parse_logical_operator (op_kind : Ast.binary_operator_kind) : string =
   match op_kind with

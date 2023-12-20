@@ -11,6 +11,7 @@ int main() {
 
   float d[3];
 
+  char e[6];
+
   return 0;
-  // exit()
 }

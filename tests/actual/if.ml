@@ -29,7 +29,7 @@ let () =
     else x
   in
   let x =
-    if Int.( = ) x y then
+    if Int.( <> ) x y then
       let x = Int.( + ) x y in
       x
     else x

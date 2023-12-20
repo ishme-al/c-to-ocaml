@@ -14,4 +14,16 @@ let rec set_at_index (lst : 'a list) (index : int) (value : 'a) : 'a list =
 let () =
   let a : float = 1. in
   let b : float = 2.3 in
+  let c : float = Float.( + ) a b in
+  let d : float = Float.( * ) a b in
+  let e =
+    if Float.( = ) b 0. then
+      let e = 0. in
+      e
+    else
+      let e = Float.( / ) a b in
+      e
+  in
+  printf "c = %f\n" c;
+  printf "d = %f\n" d;
   exit 0
