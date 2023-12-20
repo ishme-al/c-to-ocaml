@@ -30,7 +30,9 @@ let () =
     | false -> b
     | true ->
         let b = set_at_index b i (Int.( + ) (List.nth_exn b i) 1) in
+        let b = set_at_index b i (List.nth_exn b i) in
         printf "%d, " (List.nth_exn b i);
+        let b = set_at_index b i (Int.( + ) (List.nth_exn b i) 1) in
         let i = Int.( + ) i 1 in
         for_main i b
   in

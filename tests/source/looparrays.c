@@ -8,7 +8,9 @@ int main() {
 
   for (int i = 0; i < 3; i = i + 1) {
         b[i]= b[i] +1;
+        b[i]= b[i];
         printf("%d, ", b[i]);
+        b[i] = b[i] + 1;
     }
 
   int x = b[2] + 3;

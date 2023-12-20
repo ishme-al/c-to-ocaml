@@ -57,27 +57,27 @@ When `dune test` is run we compile all source files in `source` folder and trans
 - [ ] translate AST to ocaml code
   - [x] functions
     - [x] parsing parameters
-  - [ ] statements
-    - [ ] for-loop
+  - [x] statements
+    - [x] for-loop
     - [x] if statements
     - [ ] switch statements
-  - [ ] expressions
-    - [ ] literals
+  - [x] expressions
+    - [x] literals
     - [x] binary operators
-      - [ ] for non-int types
+      - [x] for non-int types
     - [ ] others :)
 - [x] format output string
 - [x] print to file
-- [ ] watch feature (partially done)
+- [x] watch feature (partially done)
 
 # things to implement
 - [x] function declaration
-- [ ] conditional statements
-- [ ] loops
+- [x] conditional statements
+- [x] loops
 - [x] structs
-- [ ] arrays
+- [x] arrays
 - [ ] enums
-- [ ] i/o (to stdin stdout only?)
+- [x] i/o (to stdin stdout only?) - partially done for print f
 
 ##### Example Execution
 if input file is called csample.c, and we want to output ocaml file called ocamloutput.ml, we call the command line as follows:
@@ -85,3 +85,7 @@ if input file is called csample.c, and we want to output ocaml file called ocaml
 tocaml.exe csample.c ocamloutput.ml
 ```
 There is an optional flag of `-w` so that ocamloutput.ml will continue to be regenerated after every change of csample.c
+
+###### Ast visualization
+go to viewast.ml and copy and paste all funcitons into utop.
+Running viewAst "filename" will provide ast of entire file, while other functions will help pick out asts of specific functions, structs, or lines within those functions

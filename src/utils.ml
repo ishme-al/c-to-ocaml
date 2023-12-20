@@ -204,4 +204,4 @@ let visit_struct_decl (ast : Ast.record_decl) (vars : string VarMap.t)
            @@ parse_struct_field item ast.name (Scope.get_vars s)
                 (Scope.get_types s))
          ast.fields)
-  |> Scope.add_string " }"
+  |> Scope.add_string " } "
