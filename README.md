@@ -44,13 +44,12 @@ then, prepend `LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libfswatch` to `dune build
 ### windows users
 fswatch requires cygwin. Have not tested this install process.
 
-
-# project submission notes
+# Misc. notes
 ## tests
 When `dune test` is run we compile all source files in `source` folder and transpile them to `actual`. Then each file is ran, comparing their output and return code with expected values in the code and in `expected` folder. You can see the transpiled files in the `actual` folder.
 
 
-# todo
+## todo
 - [x] c file to AST
   - [x] file to AST
   - [x] stdin to AST ??
@@ -70,7 +69,7 @@ When `dune test` is run we compile all source files in `source` folder and trans
 - [x] print to file
 - [x] watch feature (partially done)
 
-# things to implement
+## things to implement
 - [x] function declaration
 - [x] conditional statements
 - [x] loops
